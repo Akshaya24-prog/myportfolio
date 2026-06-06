@@ -1,0 +1,842 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% if profile %}{{ profile.name }}{% else %}Portfolio{% endif %} — Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --lilac:      #cbb8f5;
+    --lilac-bg:   #f0ebff;
+    --yellow:     #f7e49a;
+    --yellow-bg:  #fdf9e3;
+    --rose:       #f0b8c8;
+    --rose-bg:    #fde8ef;
+    --blue:       #a8d4f5;
+    --blue-bg:    #e4f3fd;
+    --bg:         #faf9f7;
+    --white:      #ffffff;
+    --black:      #111111;
+    --text:       #1a1a1a;
+    --muted:      #666666;
+    --border:     2px solid #111111;
+    --radius:     14px;
+    --radius-pill: 999px;
+    --shadow:     4px 4px 0px #111111;
+    --shadow-lg:  6px 6px 0px #111111;
+  }
+
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ─────────────────────────────────────────
+     ENTRANCE OVERLAY
+  ───────────────────────────────────────── */
+  #entrance-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeUp 0.5s ease both;
+  }
+  #entrance-overlay.hidden { display: none; }
+
+  .entrance-box {
+    background: var(--white);
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 48px 40px;
+    max-width: 420px; width: 90%;
+    text-align: center;
+  }
+  .entrance-box h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem; font-weight: 800;
+    color: var(--black); margin-bottom: 8px;
+  }
+  .entrance-box p {
+    font-size: 0.9rem; color: var(--muted);
+    margin-bottom: 36px; line-height: 1.7;
+  }
+  .entrance-choices { display: flex; flex-direction: column; gap: 14px; }
+  .entrance-btn {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px 24px;
+    border: var(--border); border-radius: var(--radius);
+    background: var(--white); color: var(--black);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; box-shadow: var(--shadow);
+    transition: transform 0.15s, box-shadow 0.15s;
+    text-align: left;
+  }
+  .entrance-btn:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-lg); }
+  .entrance-btn:active { transform: translate(1px,1px); box-shadow: 2px 2px 0 #111; }
+  .entrance-btn.visitor { background: var(--yellow-bg); }
+  .entrance-btn.admin   { background: var(--lilac-bg); }
+  .entrance-btn .btn-icon { font-size: 1.8rem; }
+  .entrance-btn .btn-text { display: flex; flex-direction: column; gap: 2px; }
+  .entrance-btn .btn-label { font-size: 15px; font-weight: 700; }
+  .entrance-btn .btn-sub   { font-size: 12px; font-weight: 400; color: var(--muted); }
+
+  /* ─────────────────────────────────────────
+     LOGIN MODAL
+  ───────────────────────────────────────── */
+  #login-modal {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(17,17,17,0.45);
+    backdrop-filter: blur(3px);
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeUp 0.25s ease both;
+  }
+  #login-modal.hidden { display: none; }
+
+  .login-box {
+    background: var(--white);
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 40px 36px;
+    max-width: 380px; width: 90%;
+    position: relative;
+  }
+  .login-box h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem; font-weight: 800;
+    color: var(--black); margin-bottom: 6px;
+  }
+  .login-box .login-sub {
+    font-size: 0.85rem; color: var(--muted);
+    margin-bottom: 28px;
+  }
+  .login-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+  .login-field label { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .login-field input {
+    padding: 10px 14px; border: var(--border); border-radius: var(--radius);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px;
+    background: var(--white); color: var(--text); outline: none;
+    transition: box-shadow 0.15s;
+  }
+  .login-field input:focus { box-shadow: 3px 3px 0 #111; }
+  .login-error {
+    font-size: 13px; font-weight: 600; color: #c0392b;
+    background: var(--rose-bg); border: var(--border); border-radius: 8px;
+    padding: 8px 14px; margin-bottom: 14px; display: none;
+  }
+  .login-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .login-submit {
+    flex: 1; padding: 11px 0; background: var(--black); color: var(--white);
+    border: var(--border); border-radius: var(--radius-pill);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; box-shadow: var(--shadow);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .login-submit:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-lg); }
+  .login-cancel {
+    padding: 11px 20px; background: var(--white); color: var(--black);
+    border: var(--border); border-radius: var(--radius-pill);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; box-shadow: var(--shadow);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .login-cancel:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-lg); }
+
+  /* ─────────────────────────────────────────
+     ADMIN BADGE in header
+  ───────────────────────────────────────── */
+  #admin-badge {
+    display: none;
+    align-items: center; gap: 8px;
+    background: var(--lilac); border: var(--border); border-radius: var(--radius-pill);
+    font-size: 12px; font-weight: 700; color: var(--black);
+    padding: 5px 16px; box-shadow: 2px 2px 0 #111;
+    float: right; margin-top: 4px;
+  }
+  #logout-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 12px; font-weight: 700; color: var(--black);
+    text-decoration: underline; padding: 0; margin-left: 6px;
+  }
+
+  /* ─────────────────────────────────────────
+     MESSAGES TABLE (admin inbox)
+  ───────────────────────────────────────── */
+  .inbox-card { background: var(--white); border: var(--border); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow-lg); border-top: 6px solid var(--lilac); }
+  .inbox-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--black); margin-bottom: 6px; }
+  .inbox-sub   { font-size: 0.875rem; color: var(--muted); margin-bottom: 24px; font-style: italic; }
+
+  .inbox-table-wrap { overflow-x: auto; border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .inbox-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .inbox-table thead tr { background: var(--lilac); }
+  .inbox-table th {
+    padding: 12px 16px; text-align: left;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--black);
+    border-bottom: var(--border);
+  }
+  .inbox-table td {
+    padding: 13px 16px; border-bottom: 1px solid #eee;
+    color: var(--text); vertical-align: top; line-height: 1.5;
+  }
+  .inbox-table tbody tr:last-child td { border-bottom: none; }
+  .inbox-table tbody tr:hover td { background: var(--lilac-bg); }
+  .inbox-table .td-name   { font-weight: 600; white-space: nowrap; }
+  .inbox-table .td-email  { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .inbox-table .td-subj   { font-weight: 600; }
+  .inbox-table .td-msg    { color: var(--muted); max-width: 260px; }
+  .inbox-table .td-time   { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .unread-dot {
+    display: inline-block; width: 8px; height: 8px;
+    background: var(--black); border-radius: 50%; margin-right: 6px; vertical-align: middle;
+  }
+  .inbox-empty {
+    text-align: center; padding: 40px 0;
+    color: var(--muted); font-size: 14px; font-style: italic;
+  }
+
+  /* ─────────────────────────────────────────
+     REST OF ORIGINAL STYLES
+  ───────────────────────────────────────── */
+  .page-shell { max-width: 860px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  header { margin-bottom: 40px; animation: fadeUp 0.5s ease both; }
+
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--yellow); border: var(--border); border-radius: var(--radius-pill);
+    font-size: 12px; font-weight: 600; color: var(--black);
+    padding: 5px 16px; margin-bottom: 20px; box-shadow: 2px 2px 0 #111;
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #111; animation: blink 2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 800;
+    line-height: 1; letter-spacing: -0.03em; color: var(--black); margin-bottom: 14px;
+  }
+  .tagline { font-size: 0.95rem; color: var(--muted); font-weight: 400; font-style: italic; }
+
+  .flash { padding: 12px 20px; border: var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); font-size: 14px; font-weight: 600; margin-bottom: 20px; }
+  .flash-success { background: #d4f7e0; }
+  .flash-error   { background: var(--rose-bg); }
+
+  .tab-nav {
+    display: flex; border: var(--border); border-radius: var(--radius); overflow: hidden;
+    margin-bottom: 28px; box-shadow: var(--shadow); animation: fadeUp 0.5s ease 0.1s both; width: fit-content;
+  }
+  .tab-btn {
+    padding: 12px 28px; font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px; font-weight: 600; background: var(--white); color: var(--muted);
+    border: none; border-right: var(--border); cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn:hover:not(.active) { background: #f0ede8; color: var(--black); }
+  .tab-btn.active { color: var(--black); font-weight: 700; }
+  .tab-btn[data-tab="skills"].active  { background: var(--lilac); }
+  .tab-btn[data-tab="projects"].active{ background: var(--yellow); }
+  .tab-btn[data-tab="about"].active   { background: var(--rose); }
+  .tab-btn[data-tab="contact"].active { background: var(--blue); }
+  .tab-btn[data-tab="inbox"].active   { background: var(--lilac); }
+
+  .tab-panel { display: none; animation: slideIn 0.3s ease both; }
+  .tab-panel.active { display: block; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+  .card { background: var(--white); border: var(--border); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow-lg); }
+  .card-accent-lilac  { border-top: 6px solid var(--lilac); }
+  .card-accent-yellow { border-top: 6px solid var(--yellow); }
+  .card-accent-rose   { border-top: 6px solid var(--rose); }
+  .card-accent-blue   { border-top: 6px solid var(--blue); }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--black); margin-bottom: 6px; }
+  .card-sub   { font-size: 0.875rem; color: var(--muted); margin-bottom: 24px; font-style: italic; }
+
+  .skill-category { margin-bottom: 24px; }
+  .skill-category:last-child { margin-bottom: 0; }
+  .skill-cat-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+  }
+  .skill-cat-label::after { content:''; flex:1; height:1px; background:#ddd; }
+  .skills-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .skill-badge {
+    padding: 9px 20px; border: var(--border); border-radius: var(--radius-pill);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    box-shadow: 3px 3px 0 #111; transition: transform 0.15s, box-shadow 0.15s; user-select: none;
+  }
+  .skill-badge:hover  { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 #111; }
+  .skill-badge:active { transform: translate(1px,1px);   box-shadow: 2px 2px 0 #111; }
+  .skill-badge.toggled { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 #111; }
+  .sb-0 { background: var(--lilac-bg); } .sb-0.toggled { background: var(--lilac); }
+  .sb-1 { background: var(--yellow-bg); } .sb-1.toggled { background: var(--yellow); }
+  .sb-2 { background: var(--rose-bg); }  .sb-2.toggled { background: var(--rose); }
+  .sb-3 { background: var(--blue-bg); }  .sb-3.toggled { background: var(--blue); }
+  .prof-bar-wrap { margin-top: 6px; height: 4px; background: #eee; border-radius: 2px; border: 1px solid #ccc; overflow: hidden; }
+  .prof-bar { height: 100%; background: #111; border-radius: 2px; transition: width 0.8s ease; }
+
+  .projects-list { display: flex; flex-direction: column; gap: 16px; }
+  .project-inner {
+    background: var(--yellow-bg); border: var(--border); border-radius: var(--radius);
+    padding: 24px; display: flex; gap: 20px; align-items: flex-start; box-shadow: 3px 3px 0 #111;
+  }
+  .proj-icon {
+    width: 56px; height: 56px; flex-shrink: 0; background: var(--yellow);
+    border: var(--border); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 1.6rem;
+    box-shadow: 3px 3px 0 #111;
+  }
+  .proj-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+  .proj-name { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--black); }
+  .proj-status {
+    font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: var(--radius-pill);
+    border: var(--border); box-shadow: 1px 1px 0 #111;
+  }
+  .status-completed  { background: #d4f7e0; }
+  .status-in_progress{ background: var(--yellow-bg); }
+  .status-planned    { background: var(--blue-bg); }
+  .proj-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.75; margin-bottom: 12px; }
+  .proj-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .proj-tag {
+    font-size: 12px; font-weight: 600; padding: 4px 12px;
+    border-radius: var(--radius-pill); border: var(--border); box-shadow: 2px 2px 0 #111;
+  }
+  .pt-0 { background: var(--lilac); } .pt-1 { background: var(--rose); }
+  .pt-2 { background: var(--blue); } .pt-3 { background: var(--yellow); }
+  .proj-links { display: flex; gap: 10px; flex-wrap: wrap; }
+  .proj-link {
+    font-size: 12px; font-weight: 600; padding: 5px 14px; border-radius: var(--radius-pill);
+    border: var(--border); box-shadow: 2px 2px 0 #111; text-decoration: none; color: var(--black);
+    background: var(--white); transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .proj-link:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 #111; }
+
+  .about-body { font-size: 0.95rem; color: var(--muted); line-height: 1.9; margin-bottom: 24px; }
+  .about-body strong { color: var(--black); font-weight: 600; }
+  .highlight-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .highlight-chip {
+    padding: 16px; border: var(--border); border-radius: var(--radius);
+    box-shadow: 3px 3px 0 #111; font-size: 13px; font-weight: 600; text-align: center;
+  }
+  .hc-a { background: var(--lilac-bg); } .hc-b { background: var(--yellow-bg); }
+  .hc-c { background: var(--rose-bg); }  .hc-d { background: var(--blue-bg); }
+  .chip-icon { font-size: 1.4rem; margin-bottom: 4px; }
+  .chip-label { color: var(--black); display: block; }
+  .chip-sub { color: var(--muted); font-weight: 400; font-size: 11px; }
+  .resume-btn {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 20px;
+    padding: 10px 24px; background: var(--black); color: var(--white);
+    border: var(--border); border-radius: var(--radius-pill);
+    font-size: 14px; font-weight: 600; text-decoration: none;
+    box-shadow: var(--shadow); transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .resume-btn:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-lg); }
+
+  .contact-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 14px; margin-bottom: 28px; }
+  .contact-card {
+    padding: 20px; border: var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); text-decoration: none; color: var(--black);
+    font-weight: 600; font-size: 14px; display: flex; flex-direction: column; gap: 6px;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .contact-card:hover  { transform: translate(-2px,-2px); box-shadow: var(--shadow-lg); }
+  .contact-card:active { transform: translate(1px,1px); box-shadow: 2px 2px 0 #111; }
+  .cc-a { background: var(--lilac-bg); } .cc-b { background: var(--blue-bg); } .cc-c { background: var(--rose-bg); }
+  .cc-icon { font-size: 1.6rem; }
+  .cc-val { font-weight: 400; font-size: 12px; color: var(--muted); }
+
+  .form-divider { font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .form-divider::before, .form-divider::after { content:''; flex:1; height:1px; background:#ddd; }
+  .contact-form { display: flex; flex-direction: column; gap: 12px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-field { display: flex; flex-direction: column; gap: 5px; }
+  .form-field label { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .form-field input, .form-field textarea {
+    padding: 10px 14px; border: var(--border); border-radius: var(--radius);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px;
+    background: var(--white); color: var(--text); outline: none;
+    transition: box-shadow 0.15s;
+  }
+  .form-field input:focus, .form-field textarea:focus { box-shadow: 3px 3px 0 #111; }
+  .form-field textarea { min-height: 100px; resize: vertical; }
+  .submit-btn {
+    align-self: flex-start; padding: 11px 28px; background: var(--black); color: var(--white);
+    border: var(--border); border-radius: var(--radius-pill); font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .submit-btn:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-lg); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+  @media (max-width: 520px) {
+    .tab-btn { padding: 10px 14px; font-size: 12px; }
+    .card { padding: 24px 18px; }
+    .project-inner { flex-direction: column; }
+    .form-row { grid-template-columns: 1fr; }
+    .entrance-box { padding: 32px 24px; }
+    .login-box { padding: 32px 24px; }
+  }
+</style>
+</head>
+<body data-has-messages="{% if messages %}true{% else %}false{% endif %}">
+
+<!-- ══════════════════════════════════════════
+     ENTRANCE OVERLAY
+══════════════════════════════════════════ -->
+<div id="entrance-overlay">
+  <div class="entrance-box">
+    <h2>👋 Welcome</h2>
+    <p>This is <strong>{% if profile %}{{ profile.name }}{% else %}N Akshaya{% endif %}'s</strong> portfolio.<br>How would you like to enter?</p>
+    <div class="entrance-choices">
+      <button class="entrance-btn visitor" onclick="enterAsVisitor()">
+        <span class="btn-icon">🌐</span>
+        <span class="btn-text">
+          <span class="btn-label">Visitor</span>
+          <span class="btn-sub">Browse the portfolio & send a message</span>
+        </span>
+      </button>
+      <button class="entrance-btn admin" onclick="showLoginModal()">
+        <span class="btn-icon">🔐</span>
+        <span class="btn-text">
+          <span class="btn-label">Admin</span>
+          <span class="btn-sub">Log in to view received messages</span>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     LOGIN MODAL
+══════════════════════════════════════════ -->
+<div id="login-modal" class="hidden">
+  <div class="login-box">
+    <h3>🔐 Admin Login</h3>
+    <p class="login-sub">Enter your credentials to access the inbox</p>
+    <div class="login-error" id="login-error">Incorrect username or password.</div>
+    <div class="login-field">
+      <label for="admin-user">Username</label>
+      <input type="text" id="admin-user" placeholder="admin" autocomplete="off">
+    </div>
+    <div class="login-field">
+      <label for="admin-pass">Password</label>
+      <input type="password" id="admin-pass" placeholder="••••••">
+    </div>
+    <div class="login-actions">
+      <button class="login-submit" onclick="attemptLogin()">Sign In →</button>
+      <button class="login-cancel" onclick="closeLoginModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN PORTFOLIO
+══════════════════════════════════════════ -->
+<div class="page-shell">
+
+  <header>
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <div>
+        <div class="status-pill">
+          <div class="status-dot"></div>
+          Available for Internships
+        </div>
+        <h1>{% if profile %}{{ profile.name }}{% else %}N Akshaya{% endif %}</h1>
+        <p class="tagline">
+          {% if profile %}{{ profile.tagline }}{% else %}B.Tech CSE · Full-Stack Developer · AI &amp; Data Science Enthusiast{% endif %}
+        </p>
+      </div>
+      <div id="admin-badge">
+        🛡 Admin Mode
+        <button id="logout-btn" onclick="logoutAdmin()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="flash {% if message.tags == 'error' %}flash-error{% else %}flash-success{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- VISITOR TABS -->
+  <nav class="tab-nav" id="visitor-tabs" role="tablist">
+    <button class="tab-btn active" data-tab="skills"   role="tab" aria-selected="true">⚡ Skills</button>
+    <button class="tab-btn"        data-tab="projects" role="tab" aria-selected="false">🚀 Projects</button>
+    <button class="tab-btn"        data-tab="about"    role="tab" aria-selected="false">✦ About</button>
+    <button class="tab-btn"        data-tab="contact"  role="tab" aria-selected="false">✉ Contact</button>
+  </nav>
+
+  <!-- ADMIN TABS -->
+  <nav class="tab-nav" id="admin-tabs" role="tablist" style="display:none;">
+    <button class="tab-btn active" data-tab="skills"   role="tab" aria-selected="true">⚡ Skills</button>
+    <button class="tab-btn"        data-tab="projects" role="tab" aria-selected="false">🚀 Projects</button>
+    <button class="tab-btn"        data-tab="about"    role="tab" aria-selected="false">✦ About</button>
+    <button class="tab-btn"        data-tab="inbox"    role="tab" aria-selected="false">📬 Inbox</button>
+  </nav>
+
+  <!-- ── SKILLS ── -->
+  <div class="tab-panel active" id="tab-skills" role="tabpanel">
+    <div class="card card-accent-lilac">
+      <div class="card-title">Technical Skills</div>
+      <div class="card-sub">Click a badge to highlight it</div>
+      {% if skill_categories %}
+        {% for category, skills in skill_categories.items %}
+          <div class="skill-category">
+            <div class="skill-cat-label">{{ category }}</div>
+            <div class="skills-grid">
+              {% for skill in skills %}
+                <div class="skill-badge sb-{{ forloop.counter0|divisibleby:4|yesno:"0,1" }}">
+                  {{ skill.name }}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="skills-grid">
+          <div class="skill-badge sb-1">Python</div>
+          <div class="skill-badge sb-0">Django</div>
+          <div class="skill-badge sb-3">PostgreSQL</div>
+          <div class="skill-badge sb-2">HTML</div>
+          <div class="skill-badge sb-1">CSS</div>
+          <div class="skill-badge sb-0">JavaScript</div>
+          <div class="skill-badge sb-3">Pandas</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── PROJECTS ── -->
+  <div class="tab-panel" id="tab-projects" role="tabpanel">
+    <div class="card card-accent-yellow">
+      <div class="card-title">Projects</div>
+      <div class="card-sub">Things I've built</div>
+      <div class="projects-list">
+        {% if projects %}
+          {% for project in projects %}
+            <div class="project-inner">
+              <div class="proj-icon">
+                {% if project.status == 'completed' %}✅
+                {% elif project.status == 'in_progress' %}⚙️
+                {% else %}📋{% endif %}
+              </div>
+              <div style="flex:1">
+                <div class="proj-header">
+                  <span class="proj-name">{{ project.title }}</span>
+                  <span class="proj-status status-{{ project.status }}">{{ project.get_status_display }}</span>
+                  {% if project.featured %}
+                    <span class="proj-status" style="background:var(--lilac)">⭐ Featured</span>
+                  {% endif %}
+                </div>
+                <p class="proj-desc">{{ project.short_description }}</p>
+                <div class="proj-tags">
+                  {% for tech in project.get_tech_list %}
+                    <span class="proj-tag pt-{{ forloop.counter0 }}">{{ tech }}</span>
+                  {% endfor %}
+                </div>
+                <div class="proj-links">
+                  {% if project.github_url %}
+                    <a class="proj-link" href="{{ project.github_url }}" target="_blank" rel="noopener">⌨ GitHub</a>
+                  {% endif %}
+                  {% if project.live_url %}
+                    <a class="proj-link" href="{{ project.live_url }}" target="_blank" rel="noopener">🔗 Live Demo</a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="project-inner">
+            <div class="proj-icon">🏏</div>
+            <div>
+              <div class="proj-header">
+                <span class="proj-name">Match Management System</span>
+                <span class="proj-status status-completed">Completed</span>
+              </div>
+              <p class="proj-desc">A Tkinter desktop application for managing cricket match records, tracking scheduling delays, and maintaining structured match data.</p>
+              <div class="proj-tags">
+                <span class="proj-tag pt-0">Python</span>
+                <span class="proj-tag pt-1">Tkinter</span>
+                <span class="proj-tag pt-2">Desktop App</span>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ABOUT ── -->
+  <div class="tab-panel" id="tab-about" role="tabpanel">
+    <div class="card card-accent-rose">
+      <div class="card-title">About Me</div>
+      <p class="about-body">
+        {% if profile %}
+          {{ profile.bio }}
+        {% else %}
+          Hi! I'm <strong>N Akshaya</strong>, a B.Tech Computer Science student passionate about building
+          <strong>thoughtful, interactive software</strong>. I enjoy full-stack web development,
+          data science, and turning ideas into clean, working products.
+        {% endif %}
+      </p>
+      <div class="highlight-row">
+        <div class="highlight-chip hc-a">
+          <div class="chip-icon">🎓</div>
+          <span class="chip-label">B.Tech CSE</span>
+          <span class="chip-sub">In progress</span>
+        </div>
+        <div class="highlight-chip hc-b">
+          <div class="chip-icon">💻</div>
+          <span class="chip-label">Full-Stack</span>
+          <span class="chip-sub">Web development</span>
+        </div>
+        <div class="highlight-chip hc-c">
+          <div class="chip-icon">🤖</div>
+          <span class="chip-label">AI &amp; Data</span>
+          <span class="chip-sub">Science enthusiast</span>
+        </div>
+        <div class="highlight-chip hc-d">
+          <div class="chip-icon">📍</div>
+          <span class="chip-label">{% if profile and profile.location %}{{ profile.location }}{% else %}India{% endif %}</span>
+          <span class="chip-sub">Open to remote</span>
+        </div>
+      </div>
+      {% if profile and profile.resume %}
+        <a class="resume-btn" href="{% url 'download_resume' %}">📄 Download Resume</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── CONTACT (visitor only) ── -->
+  <div class="tab-panel" id="tab-contact" role="tabpanel">
+    <div class="card card-accent-blue">
+      <div class="card-title">Get in Touch</div>
+      <div class="card-sub">Let's connect and build something together</div>
+      <div class="contact-links">
+        {% if profile and profile.github %}
+          <a class="contact-card cc-a" href="{{ profile.github }}" target="_blank" rel="noopener">
+            <div class="cc-icon">⌨</div><span>GitHub</span>
+            <span class="cc-val">{{ profile.github|cut:"https://github.com/" }}</span>
+          </a>
+        {% else %}
+          <a class="contact-card cc-a" href="https://github.com/Akshaya24-prog" target="_blank" rel="noopener">
+            <div class="cc-icon">⌨</div><span>GitHub</span>
+            <span class="cc-val">Akshaya24-prog</span>
+          </a>
+        {% endif %}
+        {% if profile and profile.linkedin %}
+          <a class="contact-card cc-b" href="{{ profile.linkedin }}" target="_blank" rel="noopener">
+            <div class="cc-icon">💼</div><span>LinkedIn</span>
+            <span class="cc-val">{{ profile.name }}</span>
+          </a>
+        {% else %}
+          <a class="contact-card cc-b" href="https://www.linkedin.com/in/akshaya-n-771491374/" target="_blank" rel="noopener">
+            <div class="cc-icon">💼</div><span>LinkedIn</span>
+            <span class="cc-val">N Akshaya</span>
+          </a>
+        {% endif %}
+        {% if profile and profile.email %}
+          <a class="contact-card cc-c" href="mailto:{{ profile.email }}">
+            <div class="cc-icon">✉</div><span>Email</span>
+            <span class="cc-val">{{ profile.email }}</span>
+          </a>
+        {% else %}
+          <a class="contact-card cc-c" href="mailto:akshayanandakumar22@gmail.com">
+            <div class="cc-icon">✉</div><span>Email</span>
+            <span class="cc-val">akshayanandakumar22@gmail.com</span>
+          </a>
+        {% endif %}
+      </div>
+      <div class="form-divider">Send a Message</div>
+      <form class="contact-form" method="POST" action="{% url 'contact' %}">
+        {% csrf_token %}
+        <div class="form-row">
+          <div class="form-field">
+            <label for="name">Your Name</label>
+            <input type="text" id="name" name="name" placeholder="Jane Smith" required>
+          </div>
+          <div class="form-field">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="jane@email.com" required>
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="subject">Subject</label>
+          <input type="text" id="subject" name="subject" placeholder="Internship opportunity" required>
+        </div>
+        <div class="form-field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="Hi Akshaya, I'd love to..." required></textarea>
+        </div>
+        <button type="submit" class="submit-btn">Send Message →</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── INBOX (admin only) ── -->
+  <div class="tab-panel" id="tab-inbox" role="tabpanel">
+    <div class="inbox-card">
+      <div class="inbox-title">📬 Inbox</div>
+      <div class="inbox-sub">Messages received through the contact form</div>
+      {% if contact_messages %}
+        <div class="inbox-table-wrap">
+          <table class="inbox-table">
+            <thead>
+              <tr>
+                <th>From</th>
+                <th>Subject</th>
+                <th>Message</th>
+                <th>Received</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for msg in contact_messages %}
+              <tr>
+                <td>
+                  <div class="td-name">
+                    {% if not msg.is_read %}<span class="unread-dot"></span>{% endif %}
+                    {{ msg.name }}
+                  </div>
+                  <div class="td-email">{{ msg.email }}</div>
+                </td>
+                <td class="td-subj">{{ msg.subject }}</td>
+                <td class="td-msg">{{ msg.message|truncatechars:100 }}</td>
+                <td class="td-time">{{ msg.sent_at|date:"M d, Y" }}<br>{{ msg.sent_at|time:"H:i" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="inbox-empty">📭 No messages yet.</div>
+      {% endif %}
+    </div>
+  </div>
+
+</div><!-- end .page-shell -->
+
+<script>
+  // ── Credentials (front-end only gate)
+  const ADMIN_USER = 'admin';
+  const ADMIN_PASS = '12345';
+  let isAdmin = false;
+
+  // ── Entrance choices
+  function enterAsVisitor() {
+    document.getElementById('entrance-overlay').classList.add('hidden');
+  }
+
+  function showLoginModal() {
+    document.getElementById('login-modal').classList.remove('hidden');
+    setTimeout(() => document.getElementById('admin-user').focus(), 50);
+  }
+
+  function closeLoginModal() {
+    document.getElementById('login-modal').classList.add('hidden');
+    document.getElementById('login-error').style.display = 'none';
+    document.getElementById('admin-user').value = '';
+    document.getElementById('admin-pass').value = '';
+  }
+
+  function attemptLogin() {
+    const user = document.getElementById('admin-user').value.trim();
+    const pass = document.getElementById('admin-pass').value;
+    if (user === ADMIN_USER && pass === ADMIN_PASS) {
+      isAdmin = true;
+      closeLoginModal();
+      document.getElementById('entrance-overlay').classList.add('hidden');
+      activateAdminMode();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+      document.getElementById('admin-pass').value = '';
+      document.getElementById('admin-pass').focus();
+    }
+  }
+
+  function activateAdminMode() {
+    // Show admin badge
+    document.getElementById('admin-badge').style.display = 'flex';
+    // Swap tab bars
+    document.getElementById('visitor-tabs').style.display = 'none';
+    document.getElementById('admin-tabs').style.display  = 'flex';
+    // Reset all panels, activate skills first
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-skills').classList.add('active');
+    document.querySelectorAll('#admin-tabs .tab-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
+    document.querySelector('#admin-tabs [data-tab="skills"]').classList.add('active');
+    document.querySelector('#admin-tabs [data-tab="skills"]').setAttribute('aria-selected', 'true');
+  }
+
+  function logoutAdmin() {
+    isAdmin = false;
+    document.getElementById('admin-badge').style.display = 'none';
+    document.getElementById('visitor-tabs').style.display = 'flex';
+    document.getElementById('admin-tabs').style.display  = 'none';
+    // Re-show entrance overlay
+    document.getElementById('entrance-overlay').classList.remove('hidden');
+    // Reset tabs
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-skills').classList.add('active');
+    document.querySelectorAll('#visitor-tabs .tab-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
+    document.querySelector('#visitor-tabs [data-tab="skills"]').classList.add('active');
+    document.querySelector('#visitor-tabs [data-tab="skills"]').setAttribute('aria-selected', 'true');
+  }
+
+  // ── Tab switching — works for both visitor and admin nav bars
+  function setupTabs(navId) {
+    document.querySelectorAll('#' + navId + ' .tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#' + navId + ' .tab-btn').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        const panel = document.getElementById('tab-' + btn.dataset.tab);
+        if (panel) panel.classList.add('active');
+      });
+    });
+  }
+  setupTabs('visitor-tabs');
+  setupTabs('admin-tabs');
+
+  // ── Skill badge toggle
+  document.querySelectorAll('.skill-badge').forEach(badge => {
+    badge.addEventListener('click', () => badge.classList.toggle('toggled'));
+  });
+
+  // ── Allow Enter key in login inputs
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !document.getElementById('login-modal').classList.contains('hidden')) {
+      attemptLogin();
+    }
+  });
+
+  // ── If Django flash messages exist, jump to contact tab (visitor mode)
+  window.addEventListener('DOMContentLoaded', () => {
+    const hasMessages = document.body.dataset.hasMessages === 'true';
+    if (hasMessages && !isAdmin) {
+      const contactTab = document.querySelector('#visitor-tabs [data-tab="contact"]');
+      if (contactTab) contactTab.click();
+    }
+  });
+</script>
+
+</body>
+</html>
