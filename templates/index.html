@@ -18,6 +18,8 @@
     --rose-bg:    #fde8ef;
     --blue:       #a8d4f5;
     --blue-bg:    #e4f3fd;
+    --green:      #b8f5d0;
+    --green-bg:   #e8faf2;
     --bg:         #faf9f7;
     --white:      #ffffff;
     --black:      #111111;
@@ -238,11 +240,12 @@
   .tab-btn:last-child { border-right: none; }
   .tab-btn:hover:not(.active) { background: #f0ede8; color: var(--black); }
   .tab-btn.active { color: var(--black); font-weight: 700; }
-  .tab-btn[data-tab="skills"].active  { background: var(--lilac); }
-  .tab-btn[data-tab="projects"].active{ background: var(--yellow); }
-  .tab-btn[data-tab="about"].active   { background: var(--rose); }
-  .tab-btn[data-tab="contact"].active { background: var(--blue); }
-  .tab-btn[data-tab="inbox"].active   { background: var(--lilac); }
+  .tab-btn[data-tab="skills"].active     { background: var(--lilac); }
+  .tab-btn[data-tab="projects"].active   { background: var(--yellow); }
+  .tab-btn[data-tab="about"].active      { background: var(--rose); }
+  .tab-btn[data-tab="contact"].active    { background: var(--blue); }
+  .tab-btn[data-tab="inbox"].active      { background: var(--lilac); }
+  .tab-btn[data-tab="education"].active  { background: var(--green); }
 
   .tab-panel { display: none; animation: slideIn 0.3s ease both; }
   .tab-panel.active { display: block; }
@@ -253,6 +256,7 @@
   .card-accent-yellow { border-top: 6px solid var(--yellow); }
   .card-accent-rose   { border-top: 6px solid var(--rose); }
   .card-accent-blue   { border-top: 6px solid var(--blue); }
+  .card-accent-green  { border-top: 6px solid var(--green); }
   .card-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--black); margin-bottom: 6px; }
   .card-sub   { font-size: 0.875rem; color: var(--muted); margin-bottom: 24px; font-style: italic; }
 
@@ -265,6 +269,7 @@
   .skill-cat-label::after { content:''; flex:1; height:1px; background:#ddd; }
   .skills-grid { display: flex; flex-wrap: wrap; gap: 10px; }
   .skill-badge {
+    position: relative;
     padding: 9px 20px; border: var(--border); border-radius: var(--radius-pill);
     font-size: 13px; font-weight: 600; cursor: pointer;
     box-shadow: 3px 3px 0 #111; transition: transform 0.15s, box-shadow 0.15s; user-select: none;
@@ -374,6 +379,176 @@
 
   @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
+  /* ─────────────────────────────────────────
+     ADMIN CRUD CONTROLS
+  ───────────────────────────────────────── */
+  .admin-add-bar { display: none; margin-bottom: 16px; }
+
+  .admin-add-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 20px; background: var(--lilac); color: var(--black);
+    border: var(--border); border-radius: var(--radius-pill);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    box-shadow: var(--shadow); transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .admin-add-btn:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-lg); }
+
+  .skill-del-btn {
+    display: none;
+    position: absolute; top: -7px; right: -7px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #c0392b; color: #fff; border: 2px solid #111;
+    font-size: 12px; font-weight: 900; cursor: pointer;
+    align-items: center; justify-content: center; line-height: 1;
+    padding: 0;
+  }
+  .skill-del-btn:hover { background: #922b21; }
+
+  .proj-del-btn {
+    display: none;
+    padding: 5px 12px; background: var(--rose-bg); color: #c0392b;
+    border: var(--border); border-radius: var(--radius-pill);
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    box-shadow: 2px 2px 0 #111; transition: transform 0.15s;
+  }
+  .proj-del-btn:hover { transform: translate(-1px,-1px); }
+
+  /* ─────────────────────────────────────────
+     ADMIN POPUP MODALS
+  ───────────────────────────────────────── */
+  .admin-popup {
+    position: fixed; inset: 0; z-index: 10001;
+    background: rgba(17,17,17,0.5); backdrop-filter: blur(3px);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .admin-popup.hidden { display: none; }
+
+  .admin-popup-box {
+    background: var(--white); border: var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 36px 32px; max-width: 460px; width: 92%;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .admin-popup-box h3 {
+    font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800;
+    color: var(--black); margin-bottom: 22px;
+  }
+  .popup-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+  .popup-field label { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .popup-field input,
+  .popup-field textarea,
+  .popup-field select {
+    padding: 10px 14px; border: var(--border); border-radius: var(--radius);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px;
+    background: var(--white); color: var(--text); outline: none;
+    transition: box-shadow 0.15s; width: 100%;
+  }
+  .popup-field input:focus,
+  .popup-field textarea:focus,
+  .popup-field select:focus { box-shadow: 3px 3px 0 #111; }
+  .popup-field textarea { min-height: 80px; resize: vertical; }
+  .popup-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-save {
+    flex: 1; padding: 11px 0; background: var(--black); color: var(--white);
+    border: var(--border); border-radius: var(--radius-pill);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; box-shadow: var(--shadow); transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-save:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-lg); }
+  .btn-cancel {
+    padding: 11px 20px; background: var(--white); color: var(--black);
+    border: var(--border); border-radius: var(--radius-pill);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; box-shadow: var(--shadow);
+  }
+  .popup-error {
+    font-size: 13px; font-weight: 600; color: #c0392b;
+    background: var(--rose-bg); border: var(--border); border-radius: 8px;
+    padding: 8px 14px; margin-bottom: 12px; display: none;
+  }
+
+  /* ─────────────────────────────────────────
+     BIO EDITOR
+  ───────────────────────────────────────── */
+  #bio-editor { display: none; margin-bottom: 24px; }
+  #bio-textarea {
+    width: 100%; padding: 12px 14px; border: var(--border); border-radius: var(--radius);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; color: var(--text);
+    line-height: 1.9; min-height: 130px; resize: vertical; outline: none;
+    transition: box-shadow 0.15s; background: var(--white);
+  }
+  #bio-textarea:focus { box-shadow: 3px 3px 0 #111; }
+  .bio-save-btn {
+    margin-top: 10px; padding: 9px 24px; background: var(--black); color: var(--white);
+    border: var(--border); border-radius: var(--radius-pill);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700;
+    cursor: pointer; box-shadow: var(--shadow); transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .bio-save-btn:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-lg); }
+  #bio-save-msg {
+    font-size: 13px; font-weight: 600; color: #1a7a3c;
+    display: none; margin-top: 8px;
+  }
+
+  /* ─────────────────────────────────────────
+     EDUCATION TABLE
+  ───────────────────────────────────────── */
+  .edu-table-wrap { overflow-x: auto; border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .edu-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .edu-table thead tr { background: var(--green); }
+  .edu-table th {
+    padding: 12px 16px; text-align: left;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--black);
+    border-bottom: var(--border); white-space: nowrap;
+  }
+  .edu-table td {
+    padding: 13px 16px; border-bottom: 1px solid #eee;
+    color: var(--text); vertical-align: middle; line-height: 1.5;
+  }
+  .edu-table tbody tr:last-child td { border-bottom: none; }
+  .edu-table tbody tr:hover td { background: var(--green-bg); }
+  .edu-inst { font-weight: 600; }
+  .edu-deg  { color: var(--muted); font-size: 13px; }
+  .edu-date { white-space: nowrap; font-size: 13px; text-align: center; }
+  .edu-table th.edu-date-th { text-align: center; }
+  .edu-date-chip {
+    display: inline-block;
+    padding: 4px 12px; border-radius: var(--radius-pill);
+    border: var(--border); font-size: 12px; font-weight: 700;
+    box-shadow: 2px 2px 0 #111;
+  }
+  .edu-date-chip.present { background: var(--green); }
+  .edu-date-chip.past    { background: var(--green-bg); color: var(--muted); }
+  .edu-actions { display: none; gap: 6px; }
+  .edu-edit-btn {
+    padding: 4px 12px; background: var(--blue-bg); color: var(--black);
+    border: var(--border); border-radius: var(--radius-pill);
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    box-shadow: 2px 2px 0 #111; transition: transform 0.15s;
+  }
+  .edu-edit-btn:hover { transform: translate(-1px,-1px); }
+  .edu-del-btn {
+    padding: 4px 12px; background: var(--rose-bg); color: #c0392b;
+    border: var(--border); border-radius: var(--radius-pill);
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    box-shadow: 2px 2px 0 #111; transition: transform 0.15s;
+  }
+  .edu-del-btn:hover { transform: translate(-1px,-1px); }
+
+  .date-row { display: flex; gap: 8px; }
+  .date-row select, .date-row input { flex: 1; }
+
+  .present-toggle {
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text);
+    margin-top: 6px;
+  }
+  .present-toggle input[type="checkbox"] {
+    width: 16px; height: 16px; accent-color: var(--black); cursor: pointer;
+  }
+
   @media (max-width: 520px) {
     .tab-btn { padding: 10px 14px; font-size: 12px; }
     .card { padding: 24px 18px; }
@@ -405,7 +580,7 @@
         <span class="btn-icon">🔐</span>
         <span class="btn-text">
           <span class="btn-label">Admin</span>
-          <span class="btn-sub">Log in to view received messages</span>
+          <span class="btn-sub">Log in to manage portfolio & inbox</span>
         </span>
       </button>
     </div>
@@ -418,7 +593,7 @@
 <div id="login-modal" class="hidden">
   <div class="login-box">
     <h3>🔐 Admin Login</h3>
-    <p class="login-sub">Enter your credentials to access the inbox</p>
+    <p class="login-sub">Enter your credentials to access admin mode</p>
     <div class="login-error" id="login-error">Incorrect username or password.</div>
     <div class="login-field">
       <label for="admin-user">Username</label>
@@ -431,6 +606,130 @@
     <div class="login-actions">
       <button class="login-submit" onclick="attemptLogin()">Sign In →</button>
       <button class="login-cancel" onclick="closeLoginModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADD SKILL POPUP
+══════════════════════════════════════════ -->
+<div id="add-skill-popup" class="admin-popup hidden">
+  <div class="admin-popup-box">
+    <h3>⚡ Add Skill</h3>
+    <div class="popup-error" id="skill-popup-error"></div>
+    <div class="popup-field">
+      <label for="new-skill-name">Skill Name *</label>
+      <input type="text" id="new-skill-name" placeholder="e.g. React, Docker, Figma">
+    </div>
+    <div class="popup-field">
+      <label for="new-skill-category">Category</label>
+      <select id="new-skill-category">
+        <option value="languages">Programming Languages</option>
+        <option value="frameworks">Frameworks &amp; Libraries</option>
+        <option value="tools">Tools &amp; Technologies</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="popup-actions">
+      <button class="btn-save" onclick="submitAddSkill()">Add Skill</button>
+      <button class="btn-cancel" onclick="closeAddSkillPopup()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADD PROJECT POPUP
+══════════════════════════════════════════ -->
+<div id="add-project-popup" class="admin-popup hidden">
+  <div class="admin-popup-box">
+    <h3>🚀 Add Project</h3>
+    <div class="popup-error" id="project-popup-error"></div>
+    <div class="popup-field">
+      <label for="new-proj-title">Project Title *</label>
+      <input type="text" id="new-proj-title" placeholder="e.g. Portfolio Website">
+    </div>
+    <div class="popup-field">
+      <label for="new-proj-desc">Description *</label>
+      <textarea id="new-proj-desc" placeholder="What does this project do? (shown on the card)"></textarea>
+    </div>
+    <div class="popup-field">
+      <label for="new-proj-tech">Languages / Technologies Used</label>
+      <input type="text" id="new-proj-tech" placeholder="Python, Django, PostgreSQL  (comma-separated)">
+    </div>
+    <div class="popup-field">
+      <label for="new-proj-status">Status</label>
+      <select id="new-proj-status">
+        <option value="completed">Completed</option>
+        <option value="in_progress">In Progress</option>
+        <option value="planned">Planned</option>
+      </select>
+    </div>
+    <div class="popup-field">
+      <label for="new-proj-github">GitHub URL (optional)</label>
+      <input type="url" id="new-proj-github" placeholder="https://github.com/...">
+    </div>
+    <div class="popup-field">
+      <label for="new-proj-live">Live Demo URL (optional)</label>
+      <input type="url" id="new-proj-live" placeholder="https://...">
+    </div>
+    <div class="popup-actions">
+      <button class="btn-save" onclick="submitAddProject()">Add Project</button>
+      <button class="btn-cancel" onclick="closeAddProjectPopup()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADD / EDIT EDUCATION POPUP
+══════════════════════════════════════════ -->
+<div id="education-popup" class="admin-popup hidden">
+  <div class="admin-popup-box">
+    <h3 id="edu-popup-title">🎓 Add Education</h3>
+    <div class="popup-error" id="edu-popup-error"></div>
+    <input type="hidden" id="edu-edit-id" value="">
+    <div class="popup-field">
+      <label for="edu-institution">Institution *</label>
+      <input type="text" id="edu-institution" placeholder="e.g. Anna University, MIT">
+    </div>
+    <div class="popup-field">
+      <label for="edu-degree">Degree / Qualification</label>
+      <input type="text" id="edu-degree" placeholder="e.g. B.Tech Computer Science">
+    </div>
+    <div class="popup-field">
+      <label>Start Date</label>
+      <div class="date-row">
+        <select id="edu-start-month">
+          <option value="">Month (optional)</option>
+          <option>Jan</option><option>Feb</option><option>Mar</option>
+          <option>Apr</option><option>May</option><option>Jun</option>
+          <option>Jul</option><option>Aug</option><option>Sep</option>
+          <option>Oct</option><option>Nov</option><option>Dec</option>
+        </select>
+        <input type="number" id="edu-start-year" placeholder="Year e.g. 2021" min="1900" max="2099">
+      </div>
+    </div>
+    <div class="popup-field">
+      <label>End Date</label>
+      <label class="present-toggle">
+        <input type="checkbox" id="edu-end-present" onchange="toggleEndDate(this)" checked>
+        <span>Currently here — Present</span>
+      </label>
+      <div id="edu-end-date-fields" style="display:none; margin-top:8px;">
+        <div class="date-row">
+          <select id="edu-end-month">
+            <option value="">Month (optional)</option>
+            <option>Jan</option><option>Feb</option><option>Mar</option>
+            <option>Apr</option><option>May</option><option>Jun</option>
+            <option>Jul</option><option>Aug</option><option>Sep</option>
+            <option>Oct</option><option>Nov</option><option>Dec</option>
+          </select>
+          <input type="number" id="edu-end-year" placeholder="Year e.g. 2025" min="1900" max="2099">
+        </div>
+      </div>
+    </div>
+    <div class="popup-actions">
+      <button class="btn-save" onclick="submitEducationForm()">Save</button>
+      <button class="btn-cancel" onclick="closeEducationPopup()">Cancel</button>
     </div>
   </div>
 </div>
@@ -469,18 +768,20 @@
 
   <!-- VISITOR TABS -->
   <nav class="tab-nav" id="visitor-tabs" role="tablist">
-    <button class="tab-btn active" data-tab="skills"   role="tab" aria-selected="true">⚡ Skills</button>
-    <button class="tab-btn"        data-tab="projects" role="tab" aria-selected="false">🚀 Projects</button>
-    <button class="tab-btn"        data-tab="about"    role="tab" aria-selected="false">✦ About</button>
-    <button class="tab-btn"        data-tab="contact"  role="tab" aria-selected="false">✉ Contact</button>
+    <button class="tab-btn active" data-tab="skills"    role="tab" aria-selected="true">⚡ Skills</button>
+    <button class="tab-btn"        data-tab="projects"  role="tab" aria-selected="false">🚀 Projects</button>
+    <button class="tab-btn"        data-tab="education" role="tab" aria-selected="false">🎓 Education</button>
+    <button class="tab-btn"        data-tab="about"     role="tab" aria-selected="false">✦ About</button>
+    <button class="tab-btn"        data-tab="contact"   role="tab" aria-selected="false">✉ Contact</button>
   </nav>
 
   <!-- ADMIN TABS -->
   <nav class="tab-nav" id="admin-tabs" role="tablist" style="display:none;">
-    <button class="tab-btn active" data-tab="skills"   role="tab" aria-selected="true">⚡ Skills</button>
-    <button class="tab-btn"        data-tab="projects" role="tab" aria-selected="false">🚀 Projects</button>
-    <button class="tab-btn"        data-tab="about"    role="tab" aria-selected="false">✦ About</button>
-    <button class="tab-btn"        data-tab="inbox"    role="tab" aria-selected="false">📬 Inbox</button>
+    <button class="tab-btn active" data-tab="skills"    role="tab" aria-selected="true">⚡ Skills</button>
+    <button class="tab-btn"        data-tab="projects"  role="tab" aria-selected="false">🚀 Projects</button>
+    <button class="tab-btn"        data-tab="education" role="tab" aria-selected="false">🎓 Education</button>
+    <button class="tab-btn"        data-tab="about"     role="tab" aria-selected="false">✦ About</button>
+    <button class="tab-btn"        data-tab="inbox"     role="tab" aria-selected="false">📬 Inbox</button>
   </nav>
 
   <!-- ── SKILLS ── -->
@@ -488,30 +789,38 @@
     <div class="card card-accent-lilac">
       <div class="card-title">Technical Skills</div>
       <div class="card-sub">Click a badge to highlight it</div>
-      {% if skill_categories %}
-        {% for category, skills in skill_categories.items %}
-          <div class="skill-category">
-            <div class="skill-cat-label">{{ category }}</div>
-            <div class="skills-grid">
-              {% for skill in skills %}
-                <div class="skill-badge sb-{{ forloop.counter0|divisibleby:4|yesno:"0,1" }}">
-                  {{ skill.name }}
-                </div>
-              {% endfor %}
+
+      <div class="admin-add-bar" id="skills-add-bar">
+        <button class="admin-add-btn" onclick="openAddSkillPopup()">+ Add Skill</button>
+      </div>
+
+      <div id="skill-categories-container">
+        {% if skill_categories %}
+          {% for category, skills in skill_categories.items %}
+            <div class="skill-category" data-category-key="{{ skills.0.category }}" data-category-label="{{ category }}">
+              <div class="skill-cat-label">{{ category }}</div>
+              <div class="skills-grid">
+                {% for skill in skills %}
+                  <div class="skill-badge sb-{{ forloop.counter0|divisibleby:4|yesno:"0,1" }}" data-skill-id="{{ skill.id }}">
+                    {{ skill.name }}
+                    <button class="skill-del-btn" onclick="deleteSkill({{ skill.id }}, this)" title="Delete skill">×</button>
+                  </div>
+                {% endfor %}
+              </div>
             </div>
+          {% endfor %}
+        {% else %}
+          <div class="skills-grid">
+            <div class="skill-badge sb-1">Python</div>
+            <div class="skill-badge sb-0">Django</div>
+            <div class="skill-badge sb-3">PostgreSQL</div>
+            <div class="skill-badge sb-2">HTML</div>
+            <div class="skill-badge sb-1">CSS</div>
+            <div class="skill-badge sb-0">JavaScript</div>
+            <div class="skill-badge sb-3">Pandas</div>
           </div>
-        {% endfor %}
-      {% else %}
-        <div class="skills-grid">
-          <div class="skill-badge sb-1">Python</div>
-          <div class="skill-badge sb-0">Django</div>
-          <div class="skill-badge sb-3">PostgreSQL</div>
-          <div class="skill-badge sb-2">HTML</div>
-          <div class="skill-badge sb-1">CSS</div>
-          <div class="skill-badge sb-0">JavaScript</div>
-          <div class="skill-badge sb-3">Pandas</div>
-        </div>
-      {% endif %}
+        {% endif %}
+      </div>
     </div>
   </div>
 
@@ -520,10 +829,15 @@
     <div class="card card-accent-yellow">
       <div class="card-title">Projects</div>
       <div class="card-sub">Things I've built</div>
-      <div class="projects-list">
+
+      <div class="admin-add-bar" id="projects-add-bar">
+        <button class="admin-add-btn" onclick="openAddProjectPopup()">+ Add Project</button>
+      </div>
+
+      <div class="projects-list" id="projects-container">
         {% if projects %}
           {% for project in projects %}
-            <div class="project-inner">
+            <div class="project-inner" data-project-id="{{ project.id }}">
               <div class="proj-icon">
                 {% if project.status == 'completed' %}✅
                 {% elif project.status == 'in_progress' %}⚙️
@@ -550,6 +864,7 @@
                   {% if project.live_url %}
                     <a class="proj-link" href="{{ project.live_url }}" target="_blank" rel="noopener">🔗 Live Demo</a>
                   {% endif %}
+                  <button class="proj-del-btn" onclick="deleteProject({{ project.id }}, this)">🗑 Delete</button>
                 </div>
               </div>
             </div>
@@ -579,15 +894,21 @@
   <div class="tab-panel" id="tab-about" role="tabpanel">
     <div class="card card-accent-rose">
       <div class="card-title">About Me</div>
-      <p class="about-body">
-        {% if profile %}
-          {{ profile.bio }}
-        {% else %}
-          Hi! I'm <strong>N Akshaya</strong>, a B.Tech Computer Science student passionate about building
-          <strong>thoughtful, interactive software</strong>. I enjoy full-stack web development,
-          data science, and turning ideas into clean, working products.
-        {% endif %}
+
+      <!-- Visitor view -->
+      <p class="about-body" id="bio-viewer">
+        {% if profile %}{{ profile.bio }}{% else %}Hi! I'm <strong>N Akshaya</strong>, a B.Tech Computer Science student passionate about building <strong>thoughtful, interactive software</strong>. I enjoy full-stack web development, data science, and turning ideas into clean, working products.{% endif %}
       </p>
+
+      <!-- Admin bio editor -->
+      <div id="bio-editor">
+        <textarea id="bio-textarea">{% if profile %}{{ profile.bio }}{% else %}Hi! I'm N Akshaya, a B.Tech Computer Science student passionate about building thoughtful, interactive software.{% endif %}</textarea>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:10px;">
+          <button class="bio-save-btn" onclick="saveBio()">💾 Save Changes</button>
+          <span id="bio-save-msg">✓ Saved!</span>
+        </div>
+      </div>
+
       <div class="highlight-row">
         <div class="highlight-chip hc-a">
           <div class="chip-icon">🎓</div>
@@ -613,6 +934,62 @@
       {% if profile and profile.resume %}
         <a class="resume-btn" href="{% url 'download_resume' %}">📄 Download Resume</a>
       {% endif %}
+    </div>
+  </div>
+
+  <!-- ── EDUCATION ── -->
+  <div class="tab-panel" id="tab-education" role="tabpanel">
+    <div class="card card-accent-green">
+      <div class="card-title">Education</div>
+      <div class="card-sub">Academic background</div>
+
+      <div class="admin-add-bar" id="education-add-bar">
+        <button class="admin-add-btn" onclick="openAddEducationPopup()">+ Add Education</button>
+      </div>
+
+      <div class="edu-table-wrap">
+        <table class="edu-table">
+          <thead>
+            <tr>
+              <th>Institution</th>
+              <th>Degree / Qualification</th>
+              <th class="edu-date-th">Start</th>
+              <th class="edu-date-th">End</th>
+              <th id="edu-actions-th"></th>
+            </tr>
+          </thead>
+          <tbody id="edu-tbody">
+            {% if education %}
+              {% for edu in education %}
+              <tr data-edu-id="{{ edu.id }}">
+                <td class="edu-inst">{{ edu.institution }}</td>
+                <td class="edu-deg">{{ edu.degree }}</td>
+                <td class="edu-date">
+                  {% if edu.start_date %}<span class="edu-date-chip past">{{ edu.start_date }}</span>{% endif %}
+                </td>
+                <td class="edu-date">
+                  {% if edu.end_date == 'Present' %}
+                    <span class="edu-date-chip present">Present</span>
+                  {% elif edu.end_date %}
+                    <span class="edu-date-chip past">{{ edu.end_date }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="edu-actions">
+                    <button class="edu-edit-btn" onclick="openEditEducationPopup({{ edu.id }}, '{{ edu.institution|escapejs }}', '{{ edu.degree|escapejs }}', '{{ edu.start_date|escapejs }}', '{{ edu.end_date|escapejs }}')">✏ Edit</button>
+                    <button class="edu-del-btn" onclick="deleteEducation({{ edu.id }}, this)">🗑 Delete</button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr id="edu-empty-row">
+                <td colspan="5" style="text-align:center; color:var(--muted); font-style:italic; padding:40px 0;">No education entries yet.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -725,9 +1102,12 @@
 </div><!-- end .page-shell -->
 
 <script>
-  // ── Credentials (front-end only gate)
-  const ADMIN_USER = 'admin';
-  const ADMIN_PASS = '12345';
+  // ── CSRF helper
+  function getCsrfToken() {
+    const match = document.cookie.match(/csrftoken=([^;]+)/);
+    return match ? match[1] : '';
+  }
+
   let isAdmin = false;
 
   // ── Entrance choices
@@ -747,67 +1127,426 @@
     document.getElementById('admin-pass').value = '';
   }
 
-  function attemptLogin() {
+  async function attemptLogin() {
     const user = document.getElementById('admin-user').value.trim();
     const pass = document.getElementById('admin-pass').value;
-    if (user === ADMIN_USER && pass === ADMIN_PASS) {
-      isAdmin = true;
-      closeLoginModal();
-      document.getElementById('entrance-overlay').classList.add('hidden');
-      activateAdminMode();
-    } else {
+    try {
+      const res = await fetch('/api/admin/login/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+        body: JSON.stringify({ username: user, password: pass })
+      });
+      if (res.ok) {
+        isAdmin = true;
+        closeLoginModal();
+        document.getElementById('entrance-overlay').classList.add('hidden');
+        activateAdminMode();
+      } else {
+        document.getElementById('login-error').style.display = 'block';
+        document.getElementById('admin-pass').value = '';
+        document.getElementById('admin-pass').focus();
+      }
+    } catch {
       document.getElementById('login-error').style.display = 'block';
-      document.getElementById('admin-pass').value = '';
-      document.getElementById('admin-pass').focus();
     }
   }
 
   function activateAdminMode() {
-    // Show admin badge
     document.getElementById('admin-badge').style.display = 'flex';
-    // Swap tab bars
     document.getElementById('visitor-tabs').style.display = 'none';
     document.getElementById('admin-tabs').style.display  = 'flex';
-    // Reset all panels, activate skills first
+
+    // Show admin controls
+    document.getElementById('skills-add-bar').style.display = 'block';
+    document.getElementById('projects-add-bar').style.display = 'block';
+    document.getElementById('education-add-bar').style.display = 'block';
+    document.querySelectorAll('.skill-del-btn').forEach(b => b.style.display = 'inline-flex');
+    document.querySelectorAll('.proj-del-btn').forEach(b => b.style.display = 'inline-flex');
+    document.querySelectorAll('.edu-actions').forEach(d => d.style.display = 'flex');
+
+    // Swap bio view → editor
+    document.getElementById('bio-viewer').style.display = 'none';
+    document.getElementById('bio-editor').style.display = 'block';
+
+    // Reset tabs to Skills
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-skills').classList.add('active');
     document.querySelectorAll('#admin-tabs .tab-btn').forEach(b => {
-      b.classList.remove('active');
-      b.setAttribute('aria-selected', 'false');
+      b.classList.remove('active'); b.setAttribute('aria-selected', 'false');
     });
     document.querySelector('#admin-tabs [data-tab="skills"]').classList.add('active');
     document.querySelector('#admin-tabs [data-tab="skills"]').setAttribute('aria-selected', 'true');
   }
 
-  function logoutAdmin() {
+  async function logoutAdmin() {
+    await fetch('/api/admin/logout/', {
+      method: 'POST', headers: { 'X-CSRFToken': getCsrfToken() }
+    });
     isAdmin = false;
     document.getElementById('admin-badge').style.display = 'none';
     document.getElementById('visitor-tabs').style.display = 'flex';
     document.getElementById('admin-tabs').style.display  = 'none';
-    // Re-show entrance overlay
+
+    // Hide admin controls
+    document.getElementById('skills-add-bar').style.display = 'none';
+    document.getElementById('projects-add-bar').style.display = 'none';
+    document.getElementById('education-add-bar').style.display = 'none';
+    document.querySelectorAll('.skill-del-btn').forEach(b => b.style.display = 'none');
+    document.querySelectorAll('.proj-del-btn').forEach(b => b.style.display = 'none');
+    document.querySelectorAll('.edu-actions').forEach(d => d.style.display = 'none');
+
+    // Swap bio editor → view
+    document.getElementById('bio-viewer').style.display = 'block';
+    document.getElementById('bio-editor').style.display = 'none';
+
     document.getElementById('entrance-overlay').classList.remove('hidden');
-    // Reset tabs
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-skills').classList.add('active');
     document.querySelectorAll('#visitor-tabs .tab-btn').forEach(b => {
-      b.classList.remove('active');
-      b.setAttribute('aria-selected', 'false');
+      b.classList.remove('active'); b.setAttribute('aria-selected', 'false');
     });
     document.querySelector('#visitor-tabs [data-tab="skills"]').classList.add('active');
     document.querySelector('#visitor-tabs [data-tab="skills"]').setAttribute('aria-selected', 'true');
   }
 
-  // ── Tab switching — works for both visitor and admin nav bars
+  // ── ADD SKILL ──────────────────────────────
+  function openAddSkillPopup() {
+    document.getElementById('new-skill-name').value = '';
+    document.getElementById('new-skill-category').value = 'languages';
+    document.getElementById('skill-popup-error').style.display = 'none';
+    document.getElementById('add-skill-popup').classList.remove('hidden');
+    setTimeout(() => document.getElementById('new-skill-name').focus(), 50);
+  }
+
+  function closeAddSkillPopup() {
+    document.getElementById('add-skill-popup').classList.add('hidden');
+  }
+
+  async function submitAddSkill() {
+    const name = document.getElementById('new-skill-name').value.trim();
+    const category = document.getElementById('new-skill-category').value;
+    const errEl = document.getElementById('skill-popup-error');
+
+    if (!name) { errEl.textContent = 'Please enter a skill name.'; errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+
+    const res = await fetch('/api/admin/skills/add/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+      body: JSON.stringify({ name, category })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      addSkillToDOM(data);
+      closeAddSkillPopup();
+    } else {
+      errEl.textContent = 'Failed to add skill. Try again.';
+      errEl.style.display = 'block';
+    }
+  }
+
+  function addSkillToDOM(skill) {
+    const container = document.getElementById('skill-categories-container');
+    let section = container.querySelector(`[data-category-key="${skill.category}"]`);
+
+    if (!section) {
+      section = document.createElement('div');
+      section.className = 'skill-category';
+      section.dataset.categoryKey = skill.category;
+      section.dataset.categoryLabel = skill.category_display;
+      section.innerHTML = `<div class="skill-cat-label">${skill.category_display}</div><div class="skills-grid"></div>`;
+      container.appendChild(section);
+    }
+
+    const badge = document.createElement('div');
+    badge.className = 'skill-badge sb-0';
+    badge.dataset.skillId = skill.id;
+    badge.innerHTML = `${skill.name}<button class="skill-del-btn" onclick="deleteSkill(${skill.id}, this)" title="Delete skill" style="display:inline-flex">×</button>`;
+    badge.addEventListener('click', e => {
+      if (e.target.classList.contains('skill-del-btn')) return;
+      badge.classList.toggle('toggled');
+    });
+    section.querySelector('.skills-grid').appendChild(badge);
+  }
+
+  async function deleteSkill(id, btn) {
+    if (!confirm('Delete this skill?')) return;
+    const res = await fetch(`/api/admin/skills/${id}/delete/`, {
+      method: 'POST', headers: { 'X-CSRFToken': getCsrfToken() }
+    });
+    if (res.ok) {
+      const badge = btn.closest('.skill-badge');
+      const grid = badge.parentElement;
+      badge.remove();
+      if (!grid.children.length) grid.closest('.skill-category').remove();
+    }
+  }
+
+  // ── ADD PROJECT ────────────────────────────
+  function openAddProjectPopup() {
+    ['new-proj-title','new-proj-desc','new-proj-tech','new-proj-github','new-proj-live'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('new-proj-status').value = 'completed';
+    document.getElementById('project-popup-error').style.display = 'none';
+    document.getElementById('add-project-popup').classList.remove('hidden');
+    setTimeout(() => document.getElementById('new-proj-title').focus(), 50);
+  }
+
+  function closeAddProjectPopup() {
+    document.getElementById('add-project-popup').classList.add('hidden');
+  }
+
+  async function submitAddProject() {
+    const title = document.getElementById('new-proj-title').value.trim();
+    const desc  = document.getElementById('new-proj-desc').value.trim();
+    const errEl = document.getElementById('project-popup-error');
+
+    if (!title) { errEl.textContent = 'Please enter a project title.'; errEl.style.display = 'block'; return; }
+    if (!desc)  { errEl.textContent = 'Please enter a description.'; errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+
+    const payload = {
+      title,
+      short_description: desc,
+      description: desc,
+      tech_stack: document.getElementById('new-proj-tech').value.trim(),
+      status: document.getElementById('new-proj-status').value,
+      github_url: document.getElementById('new-proj-github').value.trim(),
+      live_url: document.getElementById('new-proj-live').value.trim(),
+    };
+
+    const res = await fetch('/api/admin/projects/add/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      addProjectToDOM(data);
+      closeAddProjectPopup();
+    } else {
+      errEl.textContent = 'Failed to add project. Try again.';
+      errEl.style.display = 'block';
+    }
+  }
+
+  function addProjectToDOM(p) {
+    const container = document.getElementById('projects-container');
+    const icons = { completed: '✅', in_progress: '⚙️', planned: '📋' };
+    const statusCls = { completed: 'status-completed', in_progress: 'status-in_progress', planned: 'status-planned' };
+
+    const tagsHTML = p.tech_list.map((t, i) => `<span class="proj-tag pt-${i % 4}">${t}</span>`).join('');
+    const githubHTML = p.github_url ? `<a class="proj-link" href="${p.github_url}" target="_blank" rel="noopener">⌨ GitHub</a>` : '';
+    const liveHTML   = p.live_url   ? `<a class="proj-link" href="${p.live_url}"   target="_blank" rel="noopener">🔗 Live Demo</a>` : '';
+
+    const item = document.createElement('div');
+    item.className = 'project-inner';
+    item.dataset.projectId = p.id;
+    item.innerHTML = `
+      <div class="proj-icon">${icons[p.status] || '📋'}</div>
+      <div style="flex:1">
+        <div class="proj-header">
+          <span class="proj-name">${p.title}</span>
+          <span class="proj-status ${statusCls[p.status] || ''}">${p.status_display}</span>
+        </div>
+        <p class="proj-desc">${p.short_description}</p>
+        <div class="proj-tags">${tagsHTML}</div>
+        <div class="proj-links">
+          ${githubHTML}${liveHTML}
+          <button class="proj-del-btn" onclick="deleteProject(${p.id}, this)" style="display:inline-flex">🗑 Delete</button>
+        </div>
+      </div>`;
+    container.appendChild(item);
+  }
+
+  async function deleteProject(id, btn) {
+    if (!confirm('Delete this project?')) return;
+    const res = await fetch(`/api/admin/projects/${id}/delete/`, {
+      method: 'POST', headers: { 'X-CSRFToken': getCsrfToken() }
+    });
+    if (res.ok) btn.closest('.project-inner').remove();
+  }
+
+  // ── BIO UPDATE ─────────────────────────────
+  async function saveBio() {
+    const bio = document.getElementById('bio-textarea').value.trim();
+    const res = await fetch('/api/admin/bio/update/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+      body: JSON.stringify({ bio })
+    });
+    if (res.ok) {
+      document.getElementById('bio-viewer').textContent = bio;
+      const msg = document.getElementById('bio-save-msg');
+      msg.style.display = 'inline';
+      setTimeout(() => msg.style.display = 'none', 2500);
+    }
+  }
+
+  // ── EDUCATION ──────────────────────────────
+  function buildDateStr(monthId, yearId) {
+    const month = document.getElementById(monthId).value;
+    const year  = document.getElementById(yearId).value.trim();
+    if (!year) return '';
+    return month ? `${month} ${year}` : year;
+  }
+
+  function parseDateIntoFields(dateStr, monthId, yearId) {
+    if (!dateStr) return;
+    const parts = dateStr.trim().split(' ');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    if (parts.length === 2 && months.includes(parts[0])) {
+      document.getElementById(monthId).value = parts[0];
+      document.getElementById(yearId).value  = parts[1];
+    } else {
+      document.getElementById(monthId).value = '';
+      document.getElementById(yearId).value  = parts[0] || '';
+    }
+  }
+
+  function toggleEndDate(cb) {
+    document.getElementById('edu-end-date-fields').style.display = cb.checked ? 'none' : 'block';
+  }
+
+  function openAddEducationPopup() {
+    document.getElementById('edu-popup-title').textContent = '🎓 Add Education';
+    document.getElementById('edu-edit-id').value = '';
+    document.getElementById('edu-institution').value = '';
+    document.getElementById('edu-degree').value = '';
+    document.getElementById('edu-start-month').value = '';
+    document.getElementById('edu-start-year').value = '';
+    document.getElementById('edu-end-present').checked = true;
+    document.getElementById('edu-end-date-fields').style.display = 'none';
+    document.getElementById('edu-end-month').value = '';
+    document.getElementById('edu-end-year').value = '';
+    document.getElementById('edu-popup-error').style.display = 'none';
+    document.getElementById('education-popup').classList.remove('hidden');
+    setTimeout(() => document.getElementById('edu-institution').focus(), 50);
+  }
+
+  function openEditEducationPopup(id, institution, degree, start, end) {
+    document.getElementById('edu-popup-title').textContent = '✏ Edit Education';
+    document.getElementById('edu-edit-id').value = id;
+    document.getElementById('edu-institution').value = institution;
+    document.getElementById('edu-degree').value = degree;
+    parseDateIntoFields(start, 'edu-start-month', 'edu-start-year');
+    const isPresent = (end === 'Present' || end === '');
+    document.getElementById('edu-end-present').checked = isPresent;
+    document.getElementById('edu-end-date-fields').style.display = isPresent ? 'none' : 'block';
+    if (!isPresent) parseDateIntoFields(end, 'edu-end-month', 'edu-end-year');
+    else { document.getElementById('edu-end-month').value = ''; document.getElementById('edu-end-year').value = ''; }
+    document.getElementById('edu-popup-error').style.display = 'none';
+    document.getElementById('education-popup').classList.remove('hidden');
+    setTimeout(() => document.getElementById('edu-institution').focus(), 50);
+  }
+
+  function closeEducationPopup() {
+    document.getElementById('education-popup').classList.add('hidden');
+  }
+
+  async function submitEducationForm() {
+    const id = document.getElementById('edu-edit-id').value;
+    const institution = document.getElementById('edu-institution').value.trim();
+    const errEl = document.getElementById('edu-popup-error');
+    if (!institution) { errEl.textContent = 'Institution is required.'; errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+
+    const startDate = buildDateStr('edu-start-month', 'edu-start-year');
+    const isPresent = document.getElementById('edu-end-present').checked;
+    const endDate = isPresent ? 'Present' : (buildDateStr('edu-end-month', 'edu-end-year') || 'Present');
+
+    const payload = {
+      institution,
+      degree:     document.getElementById('edu-degree').value.trim(),
+      start_date: startDate,
+      end_date:   endDate,
+    };
+    const url = id ? `/api/admin/education/${id}/edit/` : '/api/admin/education/add/';
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (id) { updateEducationRowInDOM(data); } else { addEducationRowToDOM(data); }
+      closeEducationPopup();
+    } else {
+      errEl.textContent = 'Failed to save. Try again.';
+      errEl.style.display = 'block';
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function buildEduRowInner(edu) {
+    const inst  = escapeHtml(edu.institution);
+    const deg   = escapeHtml(edu.degree);
+    const start = escapeHtml(edu.start_date);
+    const end   = escapeHtml(edu.end_date);
+    const esc = s => (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const startCell = start ? `<span class="edu-date-chip past">${start}</span>` : '';
+    const endCell   = (edu.end_date === 'Present')
+      ? `<span class="edu-date-chip present">Present</span>`
+      : (end ? `<span class="edu-date-chip past">${end}</span>` : '');
+    return `
+      <td class="edu-inst">${inst}</td>
+      <td class="edu-deg">${deg}</td>
+      <td class="edu-date">${startCell}</td>
+      <td class="edu-date">${endCell}</td>
+      <td><div class="edu-actions" style="display:flex">
+        <button class="edu-edit-btn" onclick="openEditEducationPopup(${edu.id},'${esc(edu.institution)}','${esc(edu.degree)}','${esc(edu.start_date)}','${esc(edu.end_date)}')">✏ Edit</button>
+        <button class="edu-del-btn"  onclick="deleteEducation(${edu.id},this)">🗑 Delete</button>
+      </div></td>`;
+  }
+
+  function addEducationRowToDOM(edu) {
+    const tbody = document.getElementById('edu-tbody');
+    const emptyRow = document.getElementById('edu-empty-row');
+    if (emptyRow) emptyRow.remove();
+    const tr = document.createElement('tr');
+    tr.dataset.eduId = edu.id;
+    tr.innerHTML = buildEduRowInner(edu);
+    tbody.appendChild(tr);
+  }
+
+  function updateEducationRowInDOM(edu) {
+    const tr = document.querySelector(`tr[data-edu-id="${edu.id}"]`);
+    if (!tr) return;
+    tr.innerHTML = buildEduRowInner(edu);
+  }
+
+  async function deleteEducation(id, btn) {
+    if (!confirm('Delete this entry?')) return;
+    const res = await fetch(`/api/admin/education/${id}/delete/`, {
+      method: 'POST', headers: { 'X-CSRFToken': getCsrfToken() }
+    });
+    if (res.ok) {
+      btn.closest('tr').remove();
+      if (!document.querySelector('#edu-tbody tr')) {
+        const tr = document.createElement('tr');
+        tr.id = 'edu-empty-row';
+        tr.innerHTML = '<td colspan="5" style="text-align:center;color:var(--muted);font-style:italic;padding:40px 0;">No education entries yet.</td>';
+        document.getElementById('edu-tbody').appendChild(tr);
+      }
+    }
+  }
+
+  // ── Tab switching
   function setupTabs(navId) {
     document.querySelectorAll('#' + navId + ' .tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('#' + navId + ' .tab-btn').forEach(b => {
-          b.classList.remove('active');
-          b.setAttribute('aria-selected', 'false');
+          b.classList.remove('active'); b.setAttribute('aria-selected', 'false');
         });
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        btn.setAttribute('aria-selected', 'true');
+        btn.classList.add('active'); btn.setAttribute('aria-selected', 'true');
         const panel = document.getElementById('tab-' + btn.dataset.tab);
         if (panel) panel.classList.add('active');
       });
@@ -818,20 +1557,23 @@
 
   // ── Skill badge toggle
   document.querySelectorAll('.skill-badge').forEach(badge => {
-    badge.addEventListener('click', () => badge.classList.toggle('toggled'));
+    badge.addEventListener('click', e => {
+      if (e.target.classList.contains('skill-del-btn')) return;
+      badge.classList.toggle('toggled');
+    });
   });
 
-  // ── Allow Enter key in login inputs
+  // ── Enter key in login inputs
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !document.getElementById('login-modal').classList.contains('hidden')) {
       attemptLogin();
     }
   });
 
-  // ── If Django flash messages exist, jump to contact tab (visitor mode)
+  // ── After contact form submission: stay in visitor mode on the contact tab
   window.addEventListener('DOMContentLoaded', () => {
-    const hasMessages = document.body.dataset.hasMessages === 'true';
-    if (hasMessages && !isAdmin) {
+    if (document.body.dataset.hasMessages === 'true' && !isAdmin) {
+      enterAsVisitor();
       const contactTab = document.querySelector('#visitor-tabs [data-tab="contact"]');
       if (contactTab) contactTab.click();
     }

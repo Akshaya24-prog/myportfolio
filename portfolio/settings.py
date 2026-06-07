@@ -87,3 +87,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+PORTFOLIO_ADMIN_USER = os.getenv('DJANGO_SUPERUSER_USERNAME', 'admin')
+PORTFOLIO_ADMIN_PASS = os.getenv('DJANGO_SUPERUSER_PASSWORD', '12345')

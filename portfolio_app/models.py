@@ -77,3 +77,16 @@ class ContactMessage(models.Model):
 
     class Meta:
         ordering = ['-sent_at']
+
+
+class Education(models.Model):
+    institution = models.CharField(max_length=200)
+    degree = models.CharField(max_length=200, blank=True)
+    start_date = models.CharField(max_length=20, blank=True, help_text="e.g. 2021 or Sep 2021")
+    end_date = models.CharField(max_length=20, default='Present', help_text="e.g. 2025 or Present")
+
+    def __str__(self):
+        return f"{self.institution} — {self.degree}"
+
+    class Meta:
+        ordering = ['-start_date']
