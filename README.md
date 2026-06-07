@@ -1,7 +1,7 @@
 # N Akshaya — Portfolio Website
 
 A full-stack personal portfolio built with **Django 5**, **PostgreSQL**, HTML, CSS, and Vanilla JavaScript.
-Clean neo-brutalist design with a pastel colour palette, entrance overlay, tab-based navigation, and an admin inbox for contact messages.
+Clean neo-brutalist design with a pastel colour palette, tab-based navigation, and an admin inbox for contact messages.
 
 ---
 
@@ -9,12 +9,13 @@ Clean neo-brutalist design with a pastel colour palette, entrance overlay, tab-b
 
 | Layer | Technology |
 |---|---|
-| Backend | Django 5 |
-| Database | PostgreSQL + psycopg2-binary |
+| Backend | Django 5.1 |
+| Database | PostgreSQL (local) / Neon (production) |
 | Frontend | HTML5, CSS3, Vanilla JavaScript |
 | Fonts | Syne, Plus Jakarta Sans (Google Fonts) |
 | Static files | WhiteNoise |
 | Production server | Gunicorn |
+| Hosting | Render (free tier) |
 
 ---
 
@@ -23,9 +24,9 @@ Clean neo-brutalist design with a pastel colour palette, entrance overlay, tab-b
 ```
 portfolio/
 ├── .env                    ← your secrets (never commit this)
-├── .env.example
 ├── manage.py
 ├── requirements.txt
+├── Procfile
 ├── portfolio/              ← Django config
 │   ├── settings.py
 │   ├── urls.py
@@ -38,8 +39,6 @@ portfolio/
 ├── templates/
 │   └── index.html
 └── static/
-    ├── style.css
-    └── script.js
 ```
 
 ---
@@ -68,6 +67,9 @@ DB_USER=postgres
 DB_PASSWORD=your_postgres_password
 DB_HOST=localhost
 DB_PORT=5432
+
+DJANGO_SUPERUSER_USERNAME=admin
+DJANGO_SUPERUSER_PASSWORD=your_chosen_password
 ```
 
 ### 4. Run migrations
@@ -89,92 +91,92 @@ Open → http://127.0.0.1:8000
 
 The entire site is a single-page Django template with tab-based navigation.
 
-**Visitor view:** Skills · Projects · Contact  
-**Admin view:** Skills · Projects · Contact · Inbox (contact messages)
+**Visitor tabs (in order):** About · Skills · Projects · Education · Contact · About the Website
 
-On load, an entrance overlay asks whether you're a visitor or admin. The admin login (`admin` / `12345`) is a front-end UI gate — change these credentials in the `<script>` block of `index.html`.
+**Admin tabs (in order):** About · Skills · Projects · Education · Inbox · About the Website
 
-Contact form submissions are saved to the database and visible in the Inbox tab after admin login.
+The admin login is hidden inside the **"About the Website"** tab — there is a small "Login as Admin" button at the bottom of that page. Credentials are set via environment variables (`DJANGO_SUPERUSER_USERNAME` / `DJANGO_SUPERUSER_PASSWORD`).
+
+Contact form submissions are saved to the database and visible in the **Inbox** tab after admin login.
+
+> **Important:** Data added on localhost is stored in your **local** PostgreSQL database. Data on the live Render site is stored in **Neon** (cloud). The two databases are separate — anything added locally will not appear on the live site and vice versa. Always add content (projects, skills, etc.) through the live admin portal.
 
 ---
 
-## Deploying to Railway
+## Deploying to Render
 
-### Step 1 — Create a `.gitignore`
-Make sure `.env` is never pushed to GitHub. Create a `.gitignore` in the root folder:
-```
-.env
-__pycache__/
-*.pyc
-staticfiles/
-media/
-db.sqlite3
-```
+### Step 1 — Set up Neon (cloud database)
+
+1. Go to [neon.tech](https://neon.tech) → sign up (free)
+2. Create a new project → copy the **Connection string**
+   It looks like: `postgresql://user:pass@ep-xxx.region.aws.neon.tech/neondb?sslmode=require`
+3. Save this — you'll use it as `DATABASE_URL` in Render
 
 ### Step 2 — Push to GitHub
+
 ```bash
 git init
 git add .
 git commit -m "initial commit"
-```
-Go to [github.com](https://github.com), create a new repository, then:
-```bash
+git branch -M main
 git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
 git push -u origin main
 ```
 
-### Step 3 — Create a Railway account
-Go to [railway.app](https://railway.app) → sign up with your GitHub account.
+### Step 3 — Create a Render Web Service
 
-### Step 4 — Deploy from GitHub
-Click **New Project → Deploy from GitHub repo** → select your portfolio repository.
-Railway auto-detects Python and starts building.
+1. Go to [render.com](https://render.com) → sign up → **New → Web Service**
+2. Connect your GitHub account → select your portfolio repo
+3. Configure:
 
-### Step 5 — Add PostgreSQL
-In the Railway project dashboard, click **New → Database → Add PostgreSQL**.
-This creates a database and makes its connection details available to your app automatically.
+| Setting | Value |
+|---|---|
+| Root Directory | `portfolio` |
+| Runtime | Python 3 |
+| Build Command | `pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate` |
+| Start Command | `gunicorn portfolio.wsgi` |
+| Instance Type | Free |
 
-### Step 6 — Set environment variables
-In your service's **Variables** tab, add these one by one:
+### Step 4 — Set Environment Variables on Render
 
-```
-SECRET_KEY        = any-new-long-random-string
-DEBUG             = False
-ALLOWED_HOSTS     = your-app-name.up.railway.app
-DB_NAME           = ${{Postgres.PGDATABASE}}
-DB_USER           = ${{Postgres.PGUSER}}
-DB_PASSWORD       = ${{Postgres.PGPASSWORD}}
-DB_HOST           = ${{Postgres.PGHOST}}
-DB_PORT           = ${{Postgres.PGPORT}}
-```
+In **Environment → Add Environment Variable**:
 
-The `${{Postgres.VARIABLE}}` values auto-fill from the PostgreSQL plugin — no copy-pasting needed.
+| Key | Value |
+|---|---|
+| `DATABASE_URL` | *(paste your Neon connection string)* |
+| `SECRET_KEY` | *(any long random string, 50+ characters)* |
+| `DEBUG` | `False` |
+| `ALLOWED_HOSTS` | `*.onrender.com` |
+| `DJANGO_SUPERUSER_USERNAME` | *(your admin username)* |
+| `DJANGO_SUPERUSER_PASSWORD` | *(your admin password)* |
 
-### Step 7 — Set build and start commands
-In **Settings → Build**, set:
+### Step 5 — Deploy
+
+Click **Create Web Service** → Render builds and deploys automatically.
+Your live URL will be something like `https://your-app-name.onrender.com`.
+
+---
+
+## Redeploying After Code Changes
+
 ```bash
-pip install -r requirements.txt && python manage.py collectstatic --noinput
-```
-In **Settings → Deploy → Start Command**, set:
-```bash
-python manage.py migrate && gunicorn portfolio.wsgi
+git add .
+git commit -m "describe what changed"
+git push
 ```
 
-### Step 8 — Get your live URL
-Railway redeploys automatically. Once the build succeeds, your live URL appears in the **Deployments** tab — something like `https://your-app.up.railway.app`.
-
-Every time you `git push`, Railway automatically redeploys.
+Render detects the push and auto-redeploys in ~2 minutes. Watch progress in **Render → your service → Logs**.
 
 ---
 
 ## Pre-Deploy Checklist
 
-- [ ] `.env` is in `.gitignore`
-- [ ] `DEBUG=False` set in Railway variables
-- [ ] Strong `SECRET_KEY` set in Railway variables
-- [ ] Railway domain added to `ALLOWED_HOSTS`
-- [ ] Build command includes `collectstatic`
-- [ ] Start command includes `migrate`
+- [ ] `.env` is in `.gitignore` and never committed
+- [ ] `DEBUG=False` set in Render environment variables
+- [ ] Strong `SECRET_KEY` set in Render environment variables
+- [ ] `ALLOWED_HOSTS` includes your Render domain
+- [ ] Build command includes `collectstatic` and `migrate`
+- [ ] Admin credentials set as Render environment variables
 
 ---
 
@@ -182,12 +184,14 @@ Every time you `git push`, Railway automatically redeploys.
 
 | Error | Cause | Fix |
 |---|---|---|
-| `password authentication failed` | Wrong DB password | Check `.env` or Railway variable |
+| `password authentication failed` | Wrong DB password | Check `.env` or Render variable |
 | `No module named 'whitenoise'` | Not installed | `pip install whitenoise` |
 | `No module named 'psycopg2'` | Missing driver | `pip install psycopg2-binary` |
-| `relation does not exist` | Migrations not run | Run `migrate` in start command |
-| `DisallowedHost` | Domain not in ALLOWED_HOSTS | Add Railway URL to the variable |
+| `relation does not exist` | Migrations not run | Add `migrate` to build command |
+| `DisallowedHost` | Domain not in ALLOWED_HOSTS | Add Render URL to the variable |
 | Static files 404 | collectstatic not run | Add it to the build command |
+| Site takes 30–60s to load | Free tier sleep | Normal — wakes on first visit |
+| Data missing on live site | Local vs Neon DB mismatch | Re-add data via live admin portal |
 
 ---
 
