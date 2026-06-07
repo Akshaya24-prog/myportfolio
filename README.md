@@ -1,5 +1,7 @@
 # N Akshaya — Portfolio Website
 
+**Live site:** https://myportfolio-ub6o.onrender.com
+
 A full-stack personal portfolio built with **Django 5**, **PostgreSQL**, HTML, CSS, and Vanilla JavaScript.
 Clean neo-brutalist design with a pastel colour palette, tab-based navigation, and an admin inbox for contact messages.
 
@@ -193,6 +195,3 @@ Render detects the push and auto-redeploys in ~2 minutes. Watch progress in **Re
 | Site takes 30–60s to load | Free tier sleep | Normal — wakes on first visit |
 | Data missing on live site | Local vs Neon DB mismatch | Re-add data via live admin portal |
 
----
-
-*N Akshaya — B.Tech CSE Student*
