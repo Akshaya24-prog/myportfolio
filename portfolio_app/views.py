@@ -163,6 +163,22 @@ def api_delete_project(request, pk):
 
 
 @_require_admin
+def api_update_profile(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    data, err = _parse_json(request)
+    if err:
+        return err
+    profile = Profile.objects.first()
+    if not profile:
+        return JsonResponse({'error': 'No profile found'}, status=404)
+    if 'name' in data:
+        profile.name = data['name'].strip()
+    profile.save()
+    return JsonResponse({'success': True, 'name': profile.name})
+
+
+@_require_admin
 def api_update_bio(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)

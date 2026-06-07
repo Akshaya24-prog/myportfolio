@@ -217,8 +217,27 @@
 
   h1 {
     font-family: 'Syne', sans-serif;
-    font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 800;
+    font-size: clamp(1.8rem, 4.5vw, 3rem); font-weight: 800;
     line-height: 1; letter-spacing: -0.03em; color: var(--black); margin-bottom: 14px;
+  }
+  #name-edit-btn {
+    display: none; background: var(--yellow-bg); border: var(--border);
+    border-radius: var(--radius); padding: 4px 10px; font-size: 14px;
+    cursor: pointer; box-shadow: var(--shadow); flex-shrink: 0; align-self: center;
+    transition: transform 0.12s, box-shadow 0.12s;
+  }
+  #name-edit-btn:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-lg); }
+  #name-editor { display: none; margin-bottom: 14px; }
+  #name-input {
+    font-family: 'Syne', sans-serif; font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-weight: 800; letter-spacing: -0.03em; color: var(--black);
+    border: var(--border); border-radius: var(--radius); padding: 6px 12px;
+    background: var(--yellow-bg); width: 100%; max-width: 500px;
+  }
+  .name-save-btn {
+    padding: 6px 16px; font-size: 13px; font-weight: 700;
+    border: var(--border); border-radius: var(--radius);
+    background: var(--yellow); cursor: pointer; box-shadow: var(--shadow);
   }
   .tagline { font-size: 0.95rem; color: var(--muted); font-weight: 400; font-style: italic; }
 
@@ -246,6 +265,7 @@
   .tab-btn[data-tab="contact"].active    { background: var(--blue); }
   .tab-btn[data-tab="inbox"].active      { background: var(--lilac); }
   .tab-btn[data-tab="education"].active  { background: var(--green); }
+  .tab-btn[data-tab="website"].active    { background: var(--blue-bg); }
 
   .tab-panel { display: none; animation: slideIn 0.3s ease both; }
   .tab-panel.active { display: block; }
@@ -549,43 +569,41 @@
     width: 16px; height: 16px; accent-color: var(--black); cursor: pointer;
   }
 
+  /* ── About the Website tab ── */
+  .website-stack-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .wstack-chip {
+    padding: 5px 14px; border: var(--border); border-radius: var(--radius-pill);
+    font-size: 12px; font-weight: 600; background: var(--yellow-bg);
+    box-shadow: 2px 2px 0 #111;
+  }
+  .admin-login-small-btn {
+    padding: 9px 20px; font-size: 13px; font-weight: 700;
+    border: var(--border); border-radius: var(--radius);
+    background: var(--lilac-bg); color: var(--black);
+    cursor: pointer; box-shadow: var(--shadow);
+    transition: transform 0.12s, box-shadow 0.12s;
+  }
+  .admin-login-small-btn:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-lg); }
+  .back-to-visitor-btn {
+    display: inline-block; padding: 18px 40px; font-size: 17px; font-weight: 700;
+    border: var(--border); border-radius: var(--radius);
+    background: var(--yellow); color: var(--black);
+    cursor: pointer; box-shadow: var(--shadow-lg);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .back-to-visitor-btn:hover  { transform: translate(-3px,-3px); box-shadow: 8px 8px 0 #111; }
+  .back-to-visitor-btn:active { transform: translate(1px,1px); box-shadow: 2px 2px 0 #111; }
+
   @media (max-width: 520px) {
     .tab-btn { padding: 10px 14px; font-size: 12px; }
     .card { padding: 24px 18px; }
     .project-inner { flex-direction: column; }
     .form-row { grid-template-columns: 1fr; }
-    .entrance-box { padding: 32px 24px; }
     .login-box { padding: 32px 24px; }
   }
 </style>
 </head>
 <body data-has-messages="{% if messages %}true{% else %}false{% endif %}">
-
-<!-- ══════════════════════════════════════════
-     ENTRANCE OVERLAY
-══════════════════════════════════════════ -->
-<div id="entrance-overlay">
-  <div class="entrance-box">
-    <h2>👋 Welcome</h2>
-    <p>This is <strong>{% if profile %}{{ profile.name }}{% else %}N Akshaya{% endif %}'s</strong> portfolio.<br>How would you like to enter?</p>
-    <div class="entrance-choices">
-      <button class="entrance-btn visitor" onclick="enterAsVisitor()">
-        <span class="btn-icon">🌐</span>
-        <span class="btn-text">
-          <span class="btn-label">Visitor</span>
-          <span class="btn-sub">Browse the portfolio & send a message</span>
-        </span>
-      </button>
-      <button class="entrance-btn admin" onclick="showLoginModal()">
-        <span class="btn-icon">🔐</span>
-        <span class="btn-text">
-          <span class="btn-label">Admin</span>
-          <span class="btn-sub">Log in to manage portfolio & inbox</span>
-        </span>
-      </button>
-    </div>
-  </div>
-</div>
 
 <!-- ══════════════════════════════════════════
      LOGIN MODAL
@@ -746,7 +764,17 @@
           <div class="status-dot"></div>
           Available for Internships
         </div>
-        <h1>{% if profile %}{{ profile.name }}{% else %}N Akshaya{% endif %}</h1>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <h1 id="profile-name-display">{% if profile %}{{ profile.name }}{% else %}N Akshaya{% endif %}</h1>
+          <button id="name-edit-btn" onclick="openNameEditor()">✏️ Edit</button>
+        </div>
+        <div id="name-editor">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
+            <input id="name-input" type="text" value="{% if profile %}{{ profile.name }}{% else %}N Akshaya{% endif %}">
+            <button class="name-save-btn" onclick="saveProfileName()">💾 Save</button>
+            <button class="name-save-btn" style="background:var(--rose-bg);" onclick="cancelNameEdit()">✕ Cancel</button>
+          </div>
+        </div>
         <p class="tagline">
           {% if profile %}{{ profile.tagline }}{% else %}B.Tech CSE · Full-Stack Developer · AI &amp; Data Science Enthusiast{% endif %}
         </p>
@@ -768,24 +796,26 @@
 
   <!-- VISITOR TABS -->
   <nav class="tab-nav" id="visitor-tabs" role="tablist">
-    <button class="tab-btn active" data-tab="skills"    role="tab" aria-selected="true">⚡ Skills</button>
+    <button class="tab-btn active" data-tab="about"     role="tab" aria-selected="true">✦ About</button>
+    <button class="tab-btn"        data-tab="skills"    role="tab" aria-selected="false">⚡ Skills</button>
     <button class="tab-btn"        data-tab="projects"  role="tab" aria-selected="false">🚀 Projects</button>
     <button class="tab-btn"        data-tab="education" role="tab" aria-selected="false">🎓 Education</button>
-    <button class="tab-btn"        data-tab="about"     role="tab" aria-selected="false">✦ About</button>
     <button class="tab-btn"        data-tab="contact"   role="tab" aria-selected="false">✉ Contact</button>
+    <button class="tab-btn"        data-tab="website"   role="tab" aria-selected="false">ℹ About the Website</button>
   </nav>
 
   <!-- ADMIN TABS -->
   <nav class="tab-nav" id="admin-tabs" role="tablist" style="display:none;">
-    <button class="tab-btn active" data-tab="skills"    role="tab" aria-selected="true">⚡ Skills</button>
+    <button class="tab-btn active" data-tab="about"     role="tab" aria-selected="true">✦ About</button>
+    <button class="tab-btn"        data-tab="skills"    role="tab" aria-selected="false">⚡ Skills</button>
     <button class="tab-btn"        data-tab="projects"  role="tab" aria-selected="false">🚀 Projects</button>
     <button class="tab-btn"        data-tab="education" role="tab" aria-selected="false">🎓 Education</button>
-    <button class="tab-btn"        data-tab="about"     role="tab" aria-selected="false">✦ About</button>
     <button class="tab-btn"        data-tab="inbox"     role="tab" aria-selected="false">📬 Inbox</button>
+    <button class="tab-btn"        data-tab="website"   role="tab" aria-selected="false">ℹ About the Website</button>
   </nav>
 
   <!-- ── SKILLS ── -->
-  <div class="tab-panel active" id="tab-skills" role="tabpanel">
+  <div class="tab-panel" id="tab-skills" role="tabpanel">
     <div class="card card-accent-lilac">
       <div class="card-title">Technical Skills</div>
       <div class="card-sub">Click a badge to highlight it</div>
@@ -891,7 +921,7 @@
   </div>
 
   <!-- ── ABOUT ── -->
-  <div class="tab-panel" id="tab-about" role="tabpanel">
+  <div class="tab-panel active" id="tab-about" role="tabpanel">
     <div class="card card-accent-rose">
       <div class="card-title">About Me</div>
 
@@ -1099,6 +1129,49 @@
     </div>
   </div>
 
+  <!-- ── ABOUT THE WEBSITE ── -->
+  <div class="tab-panel" id="tab-website" role="tabpanel">
+
+    <!-- Visitor view -->
+    <div id="website-visitor-content">
+      <div class="card card-accent-yellow">
+        <div class="card-title">About This Website</div>
+        <div class="card-sub">Tech stack &amp; how it was built</div>
+        <p class="about-body" style="margin-bottom:16px;">
+          This portfolio was built with <strong>Django 5.1</strong> and <strong>PostgreSQL</strong>,
+          deployed on <strong>Render</strong> with a <strong>Neon</strong> cloud database.
+          It features a custom admin portal for managing skills, projects, education entries, bio, and messages —
+          all without reloading the page.
+        </p>
+        <div class="website-stack-chips">
+          <span class="wstack-chip">🐍 Python / Django</span>
+          <span class="wstack-chip">🐘 PostgreSQL (Neon)</span>
+          <span class="wstack-chip">☁️ Render</span>
+          <span class="wstack-chip">🌐 HTML / CSS / JS</span>
+        </div>
+        <div style="margin-top:28px; padding-top:20px; border-top:var(--border);">
+          <p style="font-size:13px; color:var(--muted); margin-bottom:12px;">Are you the site owner?</p>
+          <button class="admin-login-small-btn" onclick="showLoginModal()">🔐 Login as Admin</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin view -->
+    <div id="website-admin-content" style="display:none;">
+      <div class="card card-accent-lilac">
+        <div class="card-title">Website Administration</div>
+        <div class="card-sub">You're logged in as admin</div>
+        <p class="about-body" style="margin-bottom:28px;">
+          You are currently in <strong>admin mode</strong>. Use the tabs above to manage your portfolio —
+          add or remove skills and projects, update education entries, edit your bio,
+          and read messages from the Inbox. All changes are saved live to the database.
+        </p>
+        <button class="back-to-visitor-btn" onclick="logoutAdmin()">← Back to Visitor Portal</button>
+      </div>
+    </div>
+
+  </div>
+
 </div><!-- end .page-shell -->
 
 <script>
@@ -1109,11 +1182,6 @@
   }
 
   let isAdmin = false;
-
-  // ── Entrance choices
-  function enterAsVisitor() {
-    document.getElementById('entrance-overlay').classList.add('hidden');
-  }
 
   function showLoginModal() {
     document.getElementById('login-modal').classList.remove('hidden');
@@ -1139,7 +1207,6 @@
       if (res.ok) {
         isAdmin = true;
         closeLoginModal();
-        document.getElementById('entrance-overlay').classList.add('hidden');
         activateAdminMode();
       } else {
         document.getElementById('login-error').style.display = 'block';
@@ -1164,18 +1231,25 @@
     document.querySelectorAll('.proj-del-btn').forEach(b => b.style.display = 'inline-flex');
     document.querySelectorAll('.edu-actions').forEach(d => d.style.display = 'flex');
 
+    // Show name edit button
+    document.getElementById('name-edit-btn').style.display = 'inline-flex';
+
     // Swap bio view → editor
     document.getElementById('bio-viewer').style.display = 'none';
     document.getElementById('bio-editor').style.display = 'block';
 
-    // Reset tabs to Skills
+    // Swap website tab visitor → admin content
+    document.getElementById('website-visitor-content').style.display = 'none';
+    document.getElementById('website-admin-content').style.display = 'block';
+
+    // Reset tabs to About
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-skills').classList.add('active');
+    document.getElementById('tab-about').classList.add('active');
     document.querySelectorAll('#admin-tabs .tab-btn').forEach(b => {
       b.classList.remove('active'); b.setAttribute('aria-selected', 'false');
     });
-    document.querySelector('#admin-tabs [data-tab="skills"]').classList.add('active');
-    document.querySelector('#admin-tabs [data-tab="skills"]').setAttribute('aria-selected', 'true');
+    document.querySelector('#admin-tabs [data-tab="about"]').classList.add('active');
+    document.querySelector('#admin-tabs [data-tab="about"]').setAttribute('aria-selected', 'true');
   }
 
   async function logoutAdmin() {
@@ -1195,18 +1269,26 @@
     document.querySelectorAll('.proj-del-btn').forEach(b => b.style.display = 'none');
     document.querySelectorAll('.edu-actions').forEach(d => d.style.display = 'none');
 
+    // Hide name edit button and restore view
+    document.getElementById('name-edit-btn').style.display = 'none';
+    cancelNameEdit();
+
     // Swap bio editor → view
     document.getElementById('bio-viewer').style.display = 'block';
     document.getElementById('bio-editor').style.display = 'none';
 
-    document.getElementById('entrance-overlay').classList.remove('hidden');
+    // Swap website tab admin → visitor content
+    document.getElementById('website-admin-content').style.display = 'none';
+    document.getElementById('website-visitor-content').style.display = 'block';
+
+    // Reset tabs to About
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-skills').classList.add('active');
+    document.getElementById('tab-about').classList.add('active');
     document.querySelectorAll('#visitor-tabs .tab-btn').forEach(b => {
       b.classList.remove('active'); b.setAttribute('aria-selected', 'false');
     });
-    document.querySelector('#visitor-tabs [data-tab="skills"]').classList.add('active');
-    document.querySelector('#visitor-tabs [data-tab="skills"]').setAttribute('aria-selected', 'true');
+    document.querySelector('#visitor-tabs [data-tab="about"]').classList.add('active');
+    document.querySelector('#visitor-tabs [data-tab="about"]').setAttribute('aria-selected', 'true');
   }
 
   // ── ADD SKILL ──────────────────────────────
@@ -1368,6 +1450,40 @@
       method: 'POST', headers: { 'X-CSRFToken': getCsrfToken() }
     });
     if (res.ok) btn.closest('.project-inner').remove();
+  }
+
+  // ── NAME EDIT ──────────────────────────────
+  function openNameEditor() {
+    document.getElementById('profile-name-display').style.display = 'none';
+    document.getElementById('name-edit-btn').style.display = 'none';
+    document.getElementById('name-editor').style.display = 'block';
+    const inp = document.getElementById('name-input');
+    inp.focus(); inp.select();
+  }
+
+  function cancelNameEdit() {
+    document.getElementById('name-editor').style.display = 'none';
+    document.getElementById('profile-name-display').style.display = '';
+    if (document.getElementById('admin-badge').style.display !== 'none') {
+      document.getElementById('name-edit-btn').style.display = 'inline-flex';
+    }
+  }
+
+  async function saveProfileName() {
+    const name = document.getElementById('name-input').value.trim();
+    if (!name) return;
+    const res = await fetch('/api/admin/profile/update/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+      body: JSON.stringify({ name })
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('profile-name-display').textContent = data.name;
+      cancelNameEdit();
+    } else {
+      alert(data.error || 'Failed to save name');
+    }
   }
 
   // ── BIO UPDATE ─────────────────────────────

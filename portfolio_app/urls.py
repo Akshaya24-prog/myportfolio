@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/admin/skills/<int:pk>/delete/', views.api_delete_skill, name='api_delete_skill'),
     path('api/admin/projects/add/', views.api_add_project, name='api_add_project'),
     path('api/admin/projects/<int:pk>/delete/', views.api_delete_project, name='api_delete_project'),
+    path('api/admin/profile/update/', views.api_update_profile, name='api_update_profile'),
     path('api/admin/bio/update/', views.api_update_bio, name='api_update_bio'),
     path('api/admin/education/add/', views.api_add_education, name='api_add_education'),
     path('api/admin/education/<int:pk>/edit/', views.api_edit_education, name='api_edit_education'),
